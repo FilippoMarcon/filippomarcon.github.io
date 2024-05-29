@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IslandMC Admin Panel</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Minecraft&display=swap">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <img src="img/Logo.webp" alt="IslandMC Logo">
+        </div>
+        <h1>IslandMC Admin Panel</h1>
+    </header>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="user-container">
+                <div class="user-info">
+                    <div class="user-skin">
+                        <img id="user-skin-img" src="https://mc-heads.net/body/username/250px" alt="User Skin">
+                    </div>
+                    <div class="user-details">
+                        <p id="username" class="username">Username</p>
+                        <p class="rank">Rank</p>
+                    </div>
+                </div>
+            </div>
+            <nav>
+                <div class="sidebar-header">
+                    <h2>Menu</h2>
+                </div>
+                <ul>
+                    <li><a href="pages/home.html" target="content-frame">Home Panel</a></li>
+                    <li><a href="pages/staff-monitor.html" target="content-frame">Monitoraggio Staffers</a></li>
+                    <li><a href="pages/candidature-staff.html" target="content-frame">Candidature Staff</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <main class="content">
+            <iframe name="content-frame" src="pages/home.html"></iframe>
+        </main>
+    </div>
+    <script src="js/scripts.js"></script>
+</body>
+</html>

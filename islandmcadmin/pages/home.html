@@ -4,24 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Home - IslandMC Admin Panel</title>
+    <!-- Importa la libreria di Bootstrap -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <!-- Importa il tuo file CSS -->
     <link rel="stylesheet" href="css/home.css">
 </head>
 <body>
-    <div class="container">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">Stato Server</h2>
-                <p class="card-text">Il server è attualmente online.</p>
+    <div class="container mt-5">
+        <div class="row">
+            <!-- Colonna 9 -->
+            <div class="col-md-9">
+                <div class="row mb-4">
+                    <!-- Container 1: Player online -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h2 class="card-title">Player Online</h2>
+                                <p class="card-text">Numero di player online: 50</p>
+                                <!-- Aggiungi un indicatore +1/+2/etc. -->
+                                <p class="card-text">+2</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Container 2: Ordini -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h2 class="card-title">Ordini</h2>
+                                <p class="card-text">Ordini presenti: 10</p>
+                                <!-- Aggiungi un indicatore +1/+2/etc. -->
+                                <p class="card-text">+1</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Container 3: Candidature -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h2 class="card-title">Candidature Presenti</h2>
+                                <p class="card-text">Candidature presenti: 5</p>
+                                <!-- Aggiungi un indicatore +1/+2/etc. -->
+                                <p class="card-text">-1</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Seconda riga per il grafico -->
+                <div class="row">
+                    <!-- Grafico -->
+                    <div class="col-md-12">
+                        <div id="chart"></div>
+                    </div>
+                </div>
             </div>
-        </div>
-
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">Utenti Online</h2>
-                <p class="card-text">Attualmente ci sono 10 utenti online.</p>
+            <!-- Colonna 3 -->
+            <div class="col-md-3">
+                <!-- Riga per i top player -->
+                <div class="row">
+                    <!-- Player 1 -->
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
+                            <img src="https://mc-heads.net/head/player1/250px" alt="Player 1" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">Player 1</h5>
+                                <p class="card-text">Shoppato: 1000</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Player 2 -->
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
+                            <img src="https://mc-heads.net/head/player2/250px" alt="Player 2" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">Player 2</h5>
+                                <p class="card-text">Shoppato: 800</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Player 3 -->
+                    <div class="col-md-12">
+                        <div class="card">
+                            <img src="https://mc-heads.net/head/player3/250px" alt="Player 3" class="card-img-top">
+                            <div class="card-body">
+                                <h5 class="card-title">Player 3</h5>
+                                <p class="card-text">Shoppato: 600</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    <!-- Includi la libreria jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <!-- Includi la libreria Bootstrap JavaScript -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitoraggio Staff - IslandMC Admin Panel</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Importa il tuo file CSS -->
+    <link rel="stylesheet" href="../css/staff-monitor.css">
+    <!-- FontAwesome per le icone -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="mb-4">Monitoraggio Staff</h1>
+        <div class="row">
+            <!-- Colonna 9 -->
+            <div class="col-md-9">
+                <!-- Riepilogo delle attivita' recenti -->
+                <div class="custom-card mb-4">
+                    <div class="custom-card-body">
+                        <h2 class="custom-card-title">Attivita' Recenti</h2>
+                        <ul class="list-group">
+                            <li class="list-group-item">Ph1llyOn_ ha bannato il giocatore ExamplePlayer1</li>
+                            <li class="list-group-item">Auraft ha dato un avvertimento a ExamplePlayer2</li>
+                            <li class="list-group-item">zeno201 ha risposto a una richiesta di supporto</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- Tabella dello stato dello staff -->
+                <div class="custom-card">
+                    <div class="custom-card-body">
+                        <h2 class="custom-card-title">Stato dello Staff</h2>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Nick</th>
+                                    <th>Rank</th>
+                                    <th>Attivita' Recenti</th>
+                                    <th>Modifica</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Ph1llyOn_</td>
+                                    <td>Manager</td>
+                                    <td>Ban di ExamplePlayer1</td>
+                                    <td class="text-center">
+                                        <i class="fas fa-pencil-alt text-warning"></i>
+                                        <i class="fas fa-trash-alt text-danger ml-3"></i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Auraft</td>
+                                    <td>Owner</td>
+                                    <td>Avvertimento a ExamplePlayer2</td>
+                                    <td class="text-center">
+                                        <i class="fas fa-pencil-alt text-warning"></i>
+                                        <i class="fas fa-trash-alt text-danger ml-3"></i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>zeno201</td>
+                                    <td>Sr. Helper</td>
+                                    <td>Risposta a richiesta di supporto</td>
+                                    <td class="text-center">
+                                        <i class="fas fa-pencil-alt text-warning"></i>
+                                        <i class="fas fa-trash-alt text-danger ml-3"></i>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Koi_II_</td>
+                                    <td>Developer</td>
+                                    <td>Nessuna attivita' recente</td>
+                                    <td class="text-center">
+                                        <i class="fas fa-pencil-alt text-warning"></i>
+                                        <i class="fas fa-trash-alt text-danger ml-3"></i>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <!-- Colonna 3 -->
+            <div class="col-md-3">
+                <!-- Avvisi o messaggi interni -->
+                <div class="custom-card">
+                    <div class="custom-card-body">
+                        <h2 class="custom-card-title">Avvisi</h2>
+                        <ul class="list-group">
+                            <li class="list-group-item">Riunione dello staff alle 18:00</li>
+                            <li class="list-group-item">Manutenzione del server domani dalle 14:00</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Bootstrap JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+@import url(//db.onlinewebfonts.com/c/6ab539c6fc2b21ff0b149b3d06d7f97c?family=Minecraft);
+
+body {
+    font-family: 'Minecraft', sans-serif; /* Font Minecraft Regular */
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    padding: 20px;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0 -10px;
+}
+
+.col-3, .col-4, .col-9, .col-12 {
+    padding: 0 10px;
+    box-sizing: border-box;
+}
+
+.col-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+}
+
+.col-4 {
+    flex: 0 0 33.3333%;
+    max-width: 33.3333%;
+}
+
+.col-9 {
+    flex: 0 0 75%;
+    max-width: 75%;
+}
+
+.col-12 {
+    flex: 0 0 100%;
+    max-width: 100%;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.custom-card {
+    background-color: #e3f2fd;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s;
+    overflow: hidden;
+}
+
+.custom-card:hover {
+    transform: translateY(-5px);
+}
+
+.custom-card-body {
+    padding: 20px;
+}
+
+.custom-card-value {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.custom-card-title {
+    font-size: 1rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.custom-card-change {
+    font-size: 1rem;
+    font-weight: bold;
+}
+
+.custom-card-text {
+    color: #666;
+    margin: 0;
+}
+
+.custom-img-thumbnail {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    object-fit: cover;
+    margin-right: 10px;
+}
+
+.custom-card-wide {
+    display: flex;
+    align-items: center;
+}

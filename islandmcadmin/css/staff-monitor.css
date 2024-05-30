@@ -1,0 +1,48 @@
+@import url(//db.onlinewebfonts.com/c/6ab539c6fc2b21ff0b149b3d06d7f97c?family=Minecraft);
+
+body {
+    font-family: 'Minecraft', sans-serif; /* Font Minecraft Regular */
+}
+
+.custom-card {
+    background-color: #e3f2fd;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: transform 0.3s;
+}
+
+.custom-card:hover {
+    transform: translateY(-5px);
+}
+
+.custom-card-body {
+    padding: 20px;
+}
+
+.custom-card-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.custom-card-text {
+    color: #666;
+}
+
+.list-group-item {
+    font-size: 1rem;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+.fa-pencil-alt {
+    cursor: pointer;
+}
+
+.fa-trash-alt {
+    cursor: pointer;
+}

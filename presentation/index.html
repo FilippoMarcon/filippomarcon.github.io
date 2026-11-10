@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Filippo Marcon · Press Start</title>
-  <meta name="description" content="Filippo Marcon's interactive 2D pixel-art game-portfolio: explore the pier, collect stars, take the quiz.">
+  <meta name="description" content="Filippo Marcon's interactive 2D pixel-art game: explore the pier, collect stars, find secrets and get to know me.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -16,6 +16,7 @@
   <div id="bubble" role="status" aria-live="polite"></div>
   <div id="prompt"></div>
   <div id="toast" role="status" aria-live="polite"></div>
+  <div id="banner" role="status" aria-live="polite"></div>
 
   <div class="ui">
     <header class="hud">
@@ -26,7 +27,11 @@
         <span id="xpnum">0 XP</span>
         <span id="starnum" class="starnum">★ 0/6</span>
       </div>
-      <button type="button" id="snd" class="snd" aria-pressed="true">♪ SOUND ON</button>
+      <div class="ctrls">
+        <button type="button" class="snd js-mot" aria-pressed="false" aria-label="Reduce animations">MOTION: FULL</button>
+        <label class="vol"><span>VOL</span><input type="range" class="js-vol" min="0" max="100" value="60" aria-label="Volume"></label>
+        <button type="button" id="snd" class="snd js-snd" aria-pressed="true">SOUND: ON</button>
+      </div>
     </header>
 
     <section class="left">
@@ -51,8 +56,9 @@
           <dl>
             <dt>Player</dt><dd>Filippo Marcon · 19 · Caorle, Italy</dd>
             <dt>Class</dt><dd>Computer science student</dd>
-            <dt>Abilities</dt>
-            <dd><ul class="chips"><li>HTML / CSS</li><li>JavaScript</li><li>Git / GitHub</li></ul></dd>
+            <dt>Mission</dt><dd>Become a Full Stack Developer</dd>
+            <dt>Three words</dt>
+            <dd><ul class="chips gold"><li>Curious</li><li>Creative</li><li>Night owl</li></ul></dd>
             <dt>Personal bug</dt>
             <dd class="bug">“I start a project out of curiosity and end up spending the whole night on it.”</dd>
           </dl>
@@ -70,25 +76,20 @@
         <!-- ABOUT -->
         <article class="panel" id="p-about">
           <h2>About me</h2>
-          <div class="story">
-            <p><b>Hi! My name is Filippo.</b> I'm 19 and I come from Caorle, a small seaside town in the north of Italy.</p>
-            <p>I study computer science because I love technology and programming. My favourite thing is turning a curious idea into something real, like a website, a game or a book.</p>
-            <p>I've published books on Amazon and I run a Minecraft server. I built this page to introduce myself in English, so welcome to my world!</p>
-          </div>
-          <h3>Three words about me</h3>
-          <ul class="chips gold"><li>Curious</li><li>Creative</li><li>Night owl</li></ul>
+          <div class="chaps" id="chapTabs" role="tablist" aria-label="Story chapters"></div>
+          <div class="story" id="chapText" role="tabpanel" aria-live="polite"></div>
         </article>
 
         <!-- INVENTORY -->
         <article class="panel" id="p-inventory">
           <h2>Inventory</h2>
-          <p class="note top">Hover an item and watch what happens.</p>
+          <h3>Equipped</h3>
           <ul class="items">
-            <li data-act="web" tabindex="0"><canvas class="icon" data-icon="laptop" width="8" height="8"></canvas><div><b>Laptop</b><small>Equipped · where my projects are born</small></div></li>
-            <li data-act="book1" tabindex="0"><canvas class="icon" data-icon="book" width="8" height="8"></canvas><div><b>Books on Amazon</b><small>“3:17” · “Diario di un Content Creator”</small></div></li>
-            <li data-act="mc" tabindex="0"><canvas class="icon" data-icon="block" width="8" height="8"></canvas><div><b>Minecraft server</b><small>Gaming projects</small></div></li>
+            <li data-act="web" tabindex="0"><canvas class="icon" data-icon="laptop" width="8" height="8"></canvas><div><b>Laptop</b><small>Where my projects are born</small></div></li>
             <li class="link"><a href="https://github.com/FilippoMarcon" target="_blank" rel="noopener" data-act="git"><canvas class="icon" data-icon="code" width="8" height="8"></canvas><div><b>GitHub</b><small>github.com/FilippoMarcon ↗</small></div></a></li>
           </ul>
+          <h3>Collected <b id="icount" class="cnt">0/4</b></h3>
+          <ul class="items" id="collected"></ul>
         </article>
 
         <!-- FUN FACTS -->
@@ -108,15 +109,21 @@
         <!-- TECH WORDS -->
         <article class="panel" id="p-vocab">
           <h2>Tech words</h2>
-          <p class="note top">English words I use when I code. Open them all! <b id="vfound">0/6</b></p>
+          <p class="note top">English words I use when I code. Open them all! <b id="vfound"></b></p>
           <div id="vocabBox" class="vocab"></div>
         </article>
 
         <!-- QUEST LOG -->
         <article class="panel" id="p-quest">
           <h2>Quest log</h2>
-          <p class="note top">Complete everything to finish the game. <b id="qfound">0/10</b> done.</p>
+          <h3>Main quests <b id="qfound" class="cnt">0/9</b></h3>
+          <p class="note top">Finish these to complete the game.</p>
           <ul class="qlog" id="qlog"></ul>
+          <h3>Bonus · optional <b id="bfound" class="cnt">0/9</b></h3>
+          <p class="note top">Explore the pier for secrets. Not needed to finish.</p>
+          <ul class="qlog" id="bonuslog"></ul>
+          <h3>Badges <b id="badgeFound" class="cnt">0/5</b></h3>
+          <ul class="badges" id="badgeList"></ul>
         </article>
       </div>
     </section>
@@ -125,6 +132,7 @@
       <div class="st-head"><span>PLAYER 1</span><span class="online">● ONLINE</span></div>
       <p class="st-name">Filippo Marcon</p>
       <p class="st-sub">Computer science student<br>Caorle, Italy</p>
+      <div class="st-badges" id="stBadges"></div>
       <a class="gh" href="https://github.com/FilippoMarcon" target="_blank" rel="noopener" data-act="git">GitHub ↗</a>
     </aside>
 
@@ -158,13 +166,38 @@
     </div>
   </div>
 
-  <div id="finale" class="finale" hidden>
+  <div id="finale" class="finale" hidden role="dialog" aria-modal="true" aria-labelledby="finTitle">
     <div class="finale-card">
-      <p class="fin-tag">GAME COMPLETE</p>
-      <h2>You explored my whole world!</h2>
-      <p>Thank you for visiting, and for reading my page. I hope you enjoyed getting to know me.</p>
-      <p class="sign">— Filippo</p>
+      <p class="fin-tag" id="finTag">FINAL ACHIEVEMENT · QUEST MASTER</p>
+      <h2 id="finTitle">QUEST COMPLETED!</h2>
+      <p class="fin-msg">Thanks for playing!<br>I'm Filippo Marcon.<br>This is just the beginning of my journey.</p>
+      <p class="fin-secret" id="finSecret" hidden></p>
+      <p class="fin-stats" id="finStats"></p>
       <button type="button" id="finClose" class="action">▶ Keep exploring</button>
+    </div>
+  </div>
+
+  <div id="modal" class="modal" hidden>
+    <div class="mwin" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <div class="mhead"><h2 id="mTitle"></h2><button type="button" class="mclose" id="mClose" data-close aria-label="Close">✕</button></div>
+      <div id="mBody" class="mbody"></div>
+    </div>
+  </div>
+
+  <div id="intro" class="intro" hidden role="dialog" aria-modal="true" aria-labelledby="introTitle">
+    <div class="intro-card">
+      <p class="fin-tag">PRESS START</p>
+      <p class="intro-title" id="introTitle">Filippo<br><span>Marcon</span></p>
+      <p class="intro-line" id="introText" aria-live="off"></p>
+      <div class="intro-btns">
+        <button type="button" id="introStart" class="action">▶ Press start</button>
+        <button type="button" id="introSkip" class="action ghost">Skip intro</button>
+      </div>
+      <div class="intro-opts">
+        <button type="button" class="snd js-mot" aria-pressed="false" aria-label="Reduce animations">MOTION: FULL</button>
+        <label class="vol"><span>VOL</span><input type="range" class="js-vol" min="0" max="100" value="60" aria-label="Volume"></label>
+        <button type="button" class="snd js-snd" aria-pressed="true">SOUND: ON</button>
+      </div>
     </div>
   </div>
 

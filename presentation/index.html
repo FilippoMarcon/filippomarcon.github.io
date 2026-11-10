@@ -3,110 +3,87 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Filippo Marcon · Choose your starting quest</title>
+  <title>Filippo Marcon · Press Start</title>
+  <meta name="description" content="Presentazione di Filippo Marcon in stile videogioco 2D.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="hero">
-    <span class="tag">ENGLISH &amp; IT LAB :: ICEBREAKER</span>
-    <h1>Filippo Marcon</h1>
-    <p class="sub">Studente di informatica · programmatore · creatore di cose</p>
-    <p class="status"><span class="dot"></span>STATUS: READY PLAYER ONE</p>
-    <nav>
-      <a href="#quest1">Quest 1</a>
-      <a href="#quest2">Quest 2</a>
-      <a href="#quest3">Quest 3</a>
-    </nav>
-  </header>
+  <canvas id="scene" aria-label="Scena pixel art: un molo di notte con il personaggio di Filippo che tiene un portatile"></canvas>
+  <div class="vignette"></div>
 
-  <main>
-    <!-- QUEST 1 -->
-    <section id="quest1" class="quest q1">
-      <div class="quest-head">
-        <span class="badge">QUEST #01</span>
-        <span class="diff">DIFFICULTY: EASY</span>
-      </div>
-      <h2>“Hello World!” personalizzato</h2>
-      <div class="grid">
-        <div class="card">
-          <h3>Identity</h3>
-          <p><strong>Filippo Marcon</strong>, 19 anni, da Caorle.</p>
-          <ul class="chips">
-            <li>HTML / CSS</li>
-            <li>JavaScript</li>
-            <li>Git / GitHub</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Personal Bug</h3>
-          <p class="bug">“Inizio un progetto per curiosità e finisco per passarci tutta la notte.”</p>
-        </div>
-        <div class="card wide">
-          <h3>Feature: curiosità</h3>
-          <p id="fact" class="fact">Premi il bottone per scoprire qualcosa su di me.</p>
-          <button id="btn" type="button">Mostra una curiosità</button>
-        </div>
-      </div>
-    </section>
+  <div class="ui">
+    <header class="hud">
+      <span>LV.19 &nbsp;FILIPPO</span>
+      <span class="hint-top">1UP</span>
+    </header>
 
-    <!-- QUEST 2 -->
-    <section id="quest2" class="quest q2">
-      <div class="quest-head">
-        <span class="badge">QUEST #02</span>
-        <span class="diff">DIFFICULTY: MEDIUM</span>
-      </div>
-      <h2>Character sheet · Me.md</h2>
-      <div class="grid">
-        <div class="card wide">
-          <h3>Stats Bar</h3>
+    <section class="left">
+      <h1 class="logo"><span class="l1">Filippo</span><span class="l2">Marcon</span></h1>
+      <p class="tagline">Studente di informatica · creatore di cose</p>
+
+      <nav id="menu" aria-label="Menu principale">
+        <button type="button" data-panel="profilo" class="sel">Profilo</button>
+        <button type="button" data-panel="statistiche">Statistiche</button>
+        <button type="button" data-panel="zaino">Inventario</button>
+        <button type="button" data-panel="curiosita">Curiosità</button>
+      </nav>
+
+      <div class="window" id="window">
+        <!-- PROFILO -->
+        <article class="panel active" id="p-profilo">
+          <h2>Profilo</h2>
+          <dl>
+            <dt>Giocatore</dt><dd>Filippo Marcon · 19 anni · Caorle</dd>
+            <dt>Classe</dt><dd>Studente di informatica</dd>
+            <dt>Abilità</dt>
+            <dd><ul class="chips"><li>HTML / CSS</li><li>JavaScript</li><li>Git / GitHub</li></ul></dd>
+            <dt>Bug personale</dt>
+            <dd class="bug">«Inizio un progetto per curiosità e finisco per passarci tutta la notte.»</dd>
+          </dl>
+        </article>
+
+        <!-- STATISTICHE -->
+        <article class="panel" id="p-statistiche">
+          <h2>Statistiche</h2>
           <div id="stats" class="stats"></div>
-          <p class="note">Percentuali indicative.</p>
-        </div>
-        <div class="card">
-          <h3>Perks &amp; Badges</h3>
-          <ul class="chips">
-            <li>Night Owl</li>
-            <li>Keyboard Warrior</li>
-            <li>Book Author</li>
+          <h3>Talenti</h3>
+          <ul class="chips gold"><li>Nottambulo</li><li>Guerriero della tastiera</li><li>Autore di libri</li></ul>
+          <p class="note">Valori indicativi.</p>
+        </article>
+
+        <!-- ZAINO -->
+        <article class="panel" id="p-zaino">
+          <h2>Inventario</h2>
+          <ul class="items" id="items">
+            <li><canvas class="icon" data-icon="laptop" width="8" height="8"></canvas><div><b>Portatile</b><small>Equipaggiato · da qui nascono i miei progetti</small></div></li>
+            <li><canvas class="icon" data-icon="book" width="8" height="8"></canvas><div><b>Libri su Amazon</b><small>«3:17» · «Diario di un Content Creator»</small></div></li>
+            <li><canvas class="icon" data-icon="block" width="8" height="8"></canvas><div><b>Server Minecraft</b><small>Progetti legati al gaming</small></div></li>
+            <li><a href="https://github.com/FilippoMarcon" target="_blank" rel="noopener"><canvas class="icon" data-icon="code" width="8" height="8"></canvas><div><b>GitHub</b><small>github.com/FilippoMarcon</small></div></a></li>
           </ul>
-        </div>
-        <div class="card">
-          <h3>Media &amp; link</h3>
-          <ul class="links">
-            <li><a href="https://github.com/FilippoMarcon" target="_blank" rel="noopener">GitHub · FilippoMarcon</a></li>
-          </ul>
-        </div>
+        </article>
+
+        <!-- CURIOSITA -->
+        <article class="panel" id="p-curiosita">
+          <h2>Curiosità</h2>
+          <div class="dialog">
+            <span class="name">FILIPPO</span>
+            <p id="typed" aria-live="polite"></p>
+            <span class="more" id="more">▼</span>
+          </div>
+          <button type="button" id="btn" class="action">▶ Un'altra curiosità</button>
+        </article>
       </div>
     </section>
 
-    <!-- QUEST 3 -->
-    <section id="quest3" class="quest q3">
-      <div class="quest-head">
-        <span class="badge">QUEST #03</span>
-        <span class="diff">DIFFICULTY: FUN &amp; CREATIVE</span>
-      </div>
-      <h2>Avatar pixel art</h2>
-      <div class="grid avatar-grid">
-        <div class="card avatar-card">
-          <canvas id="avatar" width="32" height="32" aria-label="Avatar pixel art 32x32 di Filippo con felpa nera e portatile"></canvas>
-        </div>
-        <div class="card">
-          <h3>8-Bit Sprite Creation</h3>
-          <p><strong>Tool:</strong> canvas HTML, disegnato pixel per pixel.</p>
-          <p><strong>Design:</strong> sprite 32×32 in stile arcade retro.</p>
-          <p><strong>Detail:</strong> il portatile, perché è da lì che nascono i miei progetti.</p>
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <p class="ready">READY TO START?</p>
-    <p class="cool">LET’S BUILD SOMETHING COOL!</p>
-  </footer>
+    <div class="controls" aria-hidden="true">
+      <button type="button" id="goLeft">◀</button>
+      <button type="button" id="goRight">▶</button>
+    </div>
+    <p class="hint">↑ ↓ scegli &nbsp;·&nbsp; ← → muovi il personaggio</p>
+  </div>
 
   <script src="script.js"></script>
 </body>

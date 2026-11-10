@@ -297,7 +297,7 @@
   const ICONS = {
     palette: { r: "#c0392b", R: "#7a1f17", w: "#f4e9c8", L: "#8a93a6", l: "#cfd6e4", c: "#16264d", g: "#4ade80", u: "#38bdf8", G: "#5fbf3f", H: "#3f9a2a", D: "#8a5a30", d: "#6b4423", y: "#ffc857", t: "#6ee7d8", n: "#2a3d99", N: "#0f1a4a", p: "#e86f8f", P: "#a8325a" },
     book: ["NNNNNNN.", "NnnnnnNw", "NnyyynNw", "NnnnnnNw", "NnnyynNw", "NnnnnnNw", "NNNNNNNw", ".wwwwww."],
-    book2: ["PPPPPPP.", "PppppppW".replace("W", "w"), "PpyyyppW".replace("W", "w"), "PpppyppW".replace("W", "w"), "PpyyyppW".replace("W", "w"), "PpppppW_".replace("W_", "pw"), "PPPPPPPw", ".wwwwww."],
+    book2: ["PPPPPPP.", "Ppppppw.".replace("w.", "pw"), "PpyyyppW".replace("W", "w"), "PpppyppW".replace("W", "w"), "PpyyyppW".replace("W", "w"), "PpppppW_".replace("W_", "pw"), "PPPPPPPw", ".wwwwww."],
     laptop: ["........", ".LLLLLL.", ".LccccL.", ".LgucuL.", ".LccccL.", ".LLLLLL.", "llllllll", ".lLLLLl."],
     block: ["GGGGGGGG", "GHGGGHGG", "DDDDDDDD", "DdDDDdDD", "DDDdDDDD", "DdDDDDdD", "DDDDdDDD", "dDDDDDDd"],
     code: ["........", ".t....t.", "t.t..t.t", "t..y.t.t", "t.t.yt.t", ".t..y.t.", "........", "........"]
@@ -307,15 +307,52 @@
       const col = ICONS.palette[ch]; if (col) R(c, col, x + xx, y + yy, 1, 1);
     }));
   }
-  document.querySelectorAll("canvas.icon").forEach((cnv) => {
-    const c = cnv.getContext("2d"); drawIcon(c, cnv.dataset.icon, 0, 0);
-  });
+  document.querySelectorAll("canvas.icon").forEach((cnv) => drawIcon(cnv.getContext("2d"), cnv.dataset.icon, 0, 0));
+
+  const STAR_MAP = ["....o....", "...oyo...", "...oyo...", "ooooyoooo", "oyyyywyyo", ".oyyyyyo.", "..oyyyo..", ".oyyoyyo.", ".oyo.oyo.", "..o...o.."];
+  const STAR_PAL = { o: "#4a3300", y: "#ffd34d", w: "#fff6b0" };
+  function drawStar(x, y) {
+    STAR_MAP.forEach((row, yy) => [...row].forEach((ch, xx) => { if (STAR_PAL[ch]) R(ctx, STAR_PAL[ch], x + xx, y + yy, 1, 1); }));
+  }
+  const GLYPHS = {
+    "?": ["111", "001", "011", "000", "010"], "!": ["010", "010", "010", "000", "010"],
+    A: ["010", "101", "111", "101", "101"], B: ["110", "101", "110", "101", "110"], C: ["011", "100", "100", "100", "011"],
+    0: ["111", "101", "101", "101", "111"], 1: ["010", "110", "010", "010", "111"], "{": ["011", "010", "110", "010", "011"], "}": ["110", "010", "011", "010", "110"]
+  };
 
   const FACTS = [
     "I've published books on Amazon.",
     "I love building web projects and experimenting with new tech.",
     "I run a Minecraft server and build projects around gaming."
   ];
+  const QUIZ = [
+    { q: "Where does Filippo come from?", a: ["Caorle", "Rome", "Milan"], c: 0, fb: "Caorle, a seaside town in northern Italy." },
+    { q: "What does Filippo study?", a: ["Medicine", "Computer science", "Law"], c: 1, fb: "Computer science, of course!" },
+    { q: "What has Filippo published on Amazon?", a: ["Books", "Music albums", "Video games"], c: 0, fb: "He has published books." },
+    { q: "Which game does Filippo run a server for?", a: ["Chess", "Tetris", "Minecraft"], c: 2, fb: "A Minecraft server!" },
+    { q: "What is Filippo's “personal bug”?", a: ["He can't code without pizza", "He starts a project out of curiosity and stays up all night", "He always forgets his laptop"], c: 1, fb: "Curiosity wins, sleep loses." }
+  ];
+  const VOCAB = [
+    { w: "bug", ph: "/bʌɡ/", d: "A mistake in a program that makes it work in the wrong way.", ex: "I spent two hours looking for one tiny bug." },
+    { w: "loop", ph: "/luːp/", d: "A piece of code that repeats the same steps again and again.", ex: "A loop can show the numbers from 1 to 10." },
+    { w: "function", ph: "/ˈfʌŋkʃən/", d: "A block of code that does one job and can be used many times.", ex: "I wrote a function to calculate an average." },
+    { w: "debug", ph: "/diːˈbʌɡ/", d: "To find and fix the mistakes in your code.", ex: "Debugging is a bit like being a detective." },
+    { w: "commit", ph: "/kəˈmɪt/", d: "To save a set of changes in Git, with a short message.", ex: "I commit my code every evening." },
+    { w: "deploy", ph: "/dɪˈplɔɪ/", d: "To publish a website or an app so that people can use it.", ex: "I deployed this page on GitHub Pages." }
+  ];
+  const ACH = [
+    { id: "profile", t: "Meet the player", xp: 10 },
+    { id: "skills", t: "Check the skills", xp: 10 },
+    { id: "about", t: "Read my story", xp: 10 },
+    { id: "inventory", t: "Open the inventory", xp: 10 },
+    { id: "facts", t: "Unlock all the fun facts", xp: 30 },
+    { id: "quiz", t: "Finish the quiz", xp: 20 },
+    { id: "vocab", t: "Open all the tech words", xp: 30 },
+    { id: "places", t: "Visit the 4 places on the pier", xp: 40 },
+    { id: "quests", t: "Inspect all the quests", xp: 30 },
+    { id: "stars", t: "Collect all 6 stars", xp: 60 }
+  ];
+  const XP_PER_LEVEL = 50, MAX_LEVEL = 7;
 
   /* ================= AUDIO ================= */
   let audio, soundOn = true;
@@ -326,9 +363,16 @@
       const o = audio.createOscillator(), g = audio.createGain();
       o.type = "square"; o.frequency.value = f; g.gain.value = vol;
       o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + d);
-    } catch (e) { /* audio not available */ }
+    } catch (e) { /* audio non disponibile */ }
   }
   function jingle(notes) { notes.forEach((n, i) => setTimeout(() => blip(n, 0.08, 0.03), i * 90)); }
+  function speak(text) {
+    if (!soundOn) return;
+    try {
+      const u = new SpeechSynthesisUtterance(text); u.lang = "en-US"; u.rate = 0.9;
+      window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+    } catch (e) { /* voce non disponibile */ }
+  }
   const sndBtn = document.getElementById("snd");
   sndBtn.addEventListener("click", () => {
     soundOn = !soundOn;
@@ -337,12 +381,12 @@
     blip(880, 0.06);
   });
 
-  /* ================= PERSONAGGIO E AZIONI ================= */
+  /* ================= STATO DI GIOCO ================= */
   const FOOT = 128, MINX = 128, MAXX = 296;
   const player = { x: 178, dir: 1, moving: false, hy: 0, vy: 0, target: null };
   const keys = { left: false, right: false };
-  const SPOTS = { web: 158, mc: 186, book1: 208, book2: 208, git: 142, profile: null, stats: null, inventory: null, facts: null };
-  const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, facts: Infinity };
+  const SPOTS = { web: 158, mc: 186, book1: 208, book2: 208, git: 142, about: 269 };
+  const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, about: 6, quest: 5, facts: Infinity, quiz: Infinity, vocab: Infinity };
   const SAYS = {
     web: "Building something new…",
     book1: "“3:17” is out on Amazon!",
@@ -352,13 +396,30 @@
     profile: "Hi! I'm Filippo. Welcome to my world!",
     stats: "Skill check… not bad!",
     inventory: "Let me check my bag…",
-    facts: "Ask away! Well, press the button."
+    facts: "Ask away! Well, press the button.",
+    about: "Come in! This is my place.",
+    quiz: "Let's see how well you know me!",
+    vocab: "Words I use every day when I code.",
+    quest: "Let's see what is left to do…"
   };
   const mailbox = { flag: false, downAt: 0 };
   const parts = [];
-  let act = null, nowT = 0, tick = 0;
+  let act = null, nowT = 0, tick = 0, mailToggle = false;
 
-  const bub = document.getElementById("bubble");
+  const game = { xp: 0, done: new Set(), places: new Set(), quests: new Set(), flipped: new Set(), stars: 0, finished: false };
+  const STARS = [
+    { x: 140, y: 111 }, { x: 160, y: 111 }, { x: 198, y: 74 }, { x: 236, y: 111 }, { x: 252, y: 74 }, { x: 288, y: 111 }
+  ].map((s) => Object.assign(s, { got: false, p: Math.random() * 6 }));
+  const HOTSPOTS = [
+    { id: "post", x: 152, mx: 152, my: 96, spot: 158, bx: [143, 104, 161, 124], act: () => "web" },
+    { id: "boat", x: 186, mx: 178, my: 124, spot: 186, bx: [160, 134, 228, 148], act: () => "mc" },
+    { id: "mail", x: 208, mx: 224, my: 97, spot: 208, bx: [214, 105, 232, 127], act: () => ((mailToggle = !mailToggle) ? "book1" : "book2") },
+    { id: "door", x: 269, mx: 269, my: 93, spot: 269, bx: [258, 100, 280, 127], act: () => "about" }
+  ];
+  const PLACE_OF_ACT = { web: "post", mc: "boat", book1: "mail", book2: "mail", about: "door" };
+
+  /* ---- fumetto / toast / prompt ---- */
+  const bub = document.getElementById("bubble"), toastEl = document.getElementById("toast"), promptEl = document.getElementById("prompt");
   let btimer = null;
   function say(text, speed = 24) {
     clearInterval(btimer); bub.classList.add("show"); bub.textContent = "";
@@ -371,15 +432,70 @@
   }
   function hideBubble() { clearInterval(btimer); bub.classList.remove("show"); }
 
+  const toastQ = []; let toastBusy = false;
+  function toast(text, kind = "") {
+    toastQ.push({ text, kind }); if (!toastBusy) nextToast();
+  }
+  function nextToast() {
+    const n = toastQ.shift();
+    if (!n) { toastBusy = false; return; }
+    toastBusy = true;
+    toastEl.textContent = n.text; toastEl.className = "show " + n.kind;
+    setTimeout(() => { toastEl.className = ""; setTimeout(nextToast, 250); }, 3200);
+  }
+
+  /* ---- progresso, livelli, finale ---- */
+  const lvEl = document.getElementById("lv"), xpBar = document.getElementById("xpbar"), xpNum = document.getElementById("xpnum"), starNum = document.getElementById("starnum");
+  xpBar.innerHTML = '<i class="seg"></i>'.repeat(20);
+  const level = () => Math.min(MAX_LEVEL, 1 + Math.floor(game.xp / XP_PER_LEVEL));
+  function setHUD() {
+    const lv = level(), segs = lv >= MAX_LEVEL ? 20 : Math.round(((game.xp % XP_PER_LEVEL) / XP_PER_LEVEL) * 20);
+    lvEl.textContent = "LV." + lv; xpNum.textContent = game.xp + " XP"; starNum.textContent = `★ ${game.stars}/${STARS.length}`;
+    [...xpBar.children].forEach((s, i) => s.classList.toggle("on", i < segs));
+    renderQuest();
+  }
+  function addXP(n, label) {
+    const before = level(); game.xp += n; setHUD();
+    if (label) toast(`+${n} XP · ${label}`);
+    if (level() > before) {
+      setTimeout(() => { toast(`LEVEL UP! You reached level ${level()}`, "lvl"); burst(player.x, FOOT - 50, 16, "#ffd34d"); jingle([523, 659, 784, 1046]); }, 400);
+    }
+  }
+  function award(id) {
+    if (game.done.has(id)) return;
+    const a = ACH.find((x) => x.id === id); if (!a) return;
+    game.done.add(id);
+    addXP(a.xp); toast(`★ Quest complete: ${a.t} (+${a.xp} XP)`, "ach"); jingle([660, 880]);
+    if (game.done.size === ACH.length && !game.finished) { game.finished = true; setTimeout(showFinale, 2600); }
+  }
+  const finale = document.getElementById("finale");
+  function showFinale() {
+    finale.hidden = false; jingle([523, 659, 784, 1046, 1318]);
+    let n = 0; const iv = setInterval(() => {
+      burst(140 + Math.random() * 150, 30 + Math.random() * 60, 18, ["#ffd34d", "#e86f8f", "#6ee7d8", "#a78bfa"][n % 4]); if (++n > 14) clearInterval(iv);
+    }, 280);
+  }
+  document.getElementById("finClose").addEventListener("click", () => { finale.hidden = true; });
+
+  function renderQuest() {
+    const list = document.getElementById("qlog"); if (!list) return;
+    list.innerHTML = ACH.map((a) => `<li class="${game.done.has(a.id) ? "done" : ""}"><span>${game.done.has(a.id) ? "✔" : "□"}</span>${a.t}<em>+${a.xp} XP</em></li>`).join("");
+    document.getElementById("qfound").textContent = `${game.done.size}/${ACH.length}`;
+  }
+
+  /* ================= SISTEMA DI AZIONI ================= */
   function perform(name, opts = {}) {
-    if (act && act.name === name) { if (opts.hold) act.hold = true; return; }
+    if (act && act.name === name) {
+      if (opts.hold) act.hold = true;
+      if (opts.restart && act.state === "do") { act.t0 = nowT; act.fired = {}; act.last = {}; act.endAt = act.hold ? Infinity : nowT + DUR[name]; say(SAYS[name]); }
+      return;
+    }
     hideBubble();
     if (act) clearActProps();
     act = { name, state: "walk", t0: 0, endAt: 0, hold: !!opts.hold, fired: {}, last: {} };
     syncActive();
     const spot = SPOTS[name];
-    if (spot == null) { player.target = null; arrive(nowT); }
-    else player.target = spot;
+    if (spot == null) { player.target = null; arrive(nowT); } else player.target = spot;
   }
   function release(name) {
     if (act && act.name === name && act.hold) {
@@ -391,14 +507,14 @@
     if (!act) return;
     act.state = "do"; act.t0 = t;
     act.endAt = act.hold ? Infinity : t + DUR[act.name];
-    if (act.name !== "facts" || true) say(SAYS[act.name]);
-    if (act.name === "web" || act.name === "git" || act.name.startsWith("book") || act.name === "mc") player.dir = 1;
+    say(SAYS[act.name]);
+    if (act.name in SPOTS) player.dir = 1;
     blip(520, 0.05); setTimeout(() => blip(780, 0.06), 70);
+    const pl = PLACE_OF_ACT[act.name];
+    if (pl) { game.places.add(pl); if (game.places.size >= 4) award("places"); }
+    if (["web", "book1", "book2", "mc"].includes(act.name)) { game.quests.add(act.name); if (game.quests.size >= 4) award("quests"); }
   }
-  function clearActProps() {
-    if (mailbox.flag) mailbox.downAt = nowT + 2;
-    blocks.length = 0;
-  }
+  function clearActProps() { if (mailbox.flag) mailbox.downAt = nowT + 2; blocks.length = 0; }
   function syncActive() { document.querySelectorAll(".card").forEach((c) => c.classList.toggle("active", !!act && c.dataset.act === act.name)); }
   function endAct() { if (act) clearActProps(); act = null; hideBubble(); syncActive(); }
 
@@ -410,10 +526,10 @@
   const lerp = (a, b, t) => a + (b - a) * t;
 
   /* ---- particelle ---- */
-  function addPart(p) { parts.push(Object.assign({ vx: 0, vy: 0, g: 0, life: 30, max: 30, kind: "spark", col: "#fff" }, p, { max: p.life || 30 })); }
+  function addPart(p) { parts.push(Object.assign({ vx: 0, vy: 0, g: 0, life: 30, kind: "spark", col: "#fff" }, p, { max: p.life || 30 })); }
   function burst(x, y, n, col, kind = "star") {
     for (let i = 0; i < n; i++) {
-      const a = Math.random() * 6.28, s = 0.3 + Math.random() * 0.8;
+      const a = Math.random() * 6.28, s = 0.3 + Math.random() * 0.9;
       addPart({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.4, g: 0.02, life: 26 + Math.random() * 14, kind, col });
     }
   }
@@ -425,9 +541,10 @@
       const x = Math.round(p.x), y = Math.round(p.y);
       if (p.kind === "star") { R(ctx, p.col, x, y, 1, 1); R(ctx, p.col, x - 1, y, 1, 1); R(ctx, p.col, x + 1, y, 1, 1); R(ctx, p.col, x, y - 1, 1, 1); R(ctx, p.col, x, y + 1, 1, 1); }
       else if (p.kind === "bit") R(ctx, p.col, x, y, 2, 2);
-      else if (p.kind === "heart") {
-        [[1, 0], [3, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [1, 2], [2, 2], [3, 2], [2, 3]].forEach(([dx, dy]) => R(ctx, p.col, x + dx, y + dy, 1, 1));
-      } else R(ctx, p.col, x, y, 1, 1);
+      else if (p.kind === "heart") [[1, 0], [3, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [1, 2], [2, 2], [3, 2], [2, 3]].forEach(([dx, dy]) => R(ctx, p.col, x + dx, y + dy, 1, 1));
+      else if (p.kind === "glyph") GLYPHS[p.ch].forEach((row, yy) => [...row].forEach((c, xx) => { if (c === "1") R(ctx, p.col, x + xx, y + yy, 1, 1); }));
+      else if (p.kind === "drop") { R(ctx, p.col, x, y, 1, 2); R(ctx, p.col, x - 1, y + 2, 3, 2); }
+      else R(ctx, p.col, x, y, 1, 1);
       ctx.globalAlpha = 1;
     }
   }
@@ -435,14 +552,14 @@
   /* ---- utilità di disegno ---- */
   function line(col, x0, y0, x1, y1) {
     x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
-    const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx_ = x0 < x1 ? 1 : -1, sy_ = y0 < y1 ? 1 : -1;
+    const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), stx = x0 < x1 ? 1 : -1, sty = y0 < y1 ? 1 : -1;
     let err = dx + dy;
-    for (;;) {
+    for (let guard = 0; guard < 400; guard++) {
       R(ctx, col, x0, y0, 1, 1);
       if (x0 === x1 && y0 === y1) break;
       const e2 = 2 * err;
-      if (e2 >= dy) { err += dy; x0 += sx_; }
-      if (e2 <= dx) { err += dx; y0 += sy_; }
+      if (e2 >= dy) { err += dy; x0 += stx; }
+      if (e2 <= dx) { err += dx; y0 += sty; }
     }
   }
   function popup(x, y, w, h, k) {
@@ -453,7 +570,6 @@
   const POP_Y = 22;
   const popX = (px, w) => Math.round(Math.max(124, Math.min(px - 18, 218 - w)));
 
-  /* ---- libri, lettera, blocchi, piccone ---- */
   function drawBookSprite(x, y, v) {
     const cover = v === 2 ? "#e86f8f" : "#2a3d99", dark = v === 2 ? "#a8325a" : "#0f1a4a", gold = "#ffc857";
     R(ctx, "#0a0a14", x - 1, y - 1, 13, 16);
@@ -470,30 +586,42 @@
     R(ctx, "#0a0a14", x - 1, y - 1, 8, 8); R(ctx, "#5fbf3f", x, y, 6, 2); R(ctx, "#8a5a30", x, y + 2, 6, 4); R(ctx, "#6b4423", x + 1, y + 3, 1, 1); R(ctx, "#6b4423", x + 4, y + 4, 1, 1); R(ctx, "#3f9a2a", x + 2, y, 1, 1);
   }
   function drawPick(hx, hy, dir, f) {
-    if (f === 0) {
-      line("#6b4423", hx, hy, hx + 7 * dir, hy - 9);
-      R(ctx, "#0a0a14", hx + 7 * dir - 3, hy - 11, 7, 4); R(ctx, "#cfd6e4", hx + 7 * dir - 2, hy - 10, 5, 2);
-    } else {
-      line("#6b4423", hx, hy, hx + 8 * dir, hy + 2);
-      R(ctx, "#0a0a14", hx + 8 * dir - 2, hy - 3, 4, 8); R(ctx, "#cfd6e4", hx + 8 * dir - 1, hy - 2, 2, 6);
-    }
+    if (f === 0) { line("#6b4423", hx, hy, hx + 7 * dir, hy - 9); R(ctx, "#0a0a14", hx + 7 * dir - 3, hy - 11, 7, 4); R(ctx, "#cfd6e4", hx + 7 * dir - 2, hy - 10, 5, 2); }
+    else { line("#6b4423", hx, hy, hx + 8 * dir, hy + 2); R(ctx, "#0a0a14", hx + 8 * dir - 2, hy - 3, 4, 8); R(ctx, "#cfd6e4", hx + 8 * dir - 1, hy - 2, 2, 6); }
+  }
+  function drawMarker(x, y, visited, t) {
+    const yy = y + Math.round(Math.sin(t * 4 + x) * 1.5);
+    if (visited) { R(ctx, "#0a0a14", x - 3, yy - 3, 7, 7); R(ctx, "#2fa85c", x - 2, yy - 2, 5, 5); R(ctx, "#fff", x - 1, yy, 1, 1); R(ctx, "#fff", x, yy + 1, 1, 1); R(ctx, "#fff", x + 1, yy - 1, 1, 1); return; }
+    R(ctx, "#0a0a14", x - 4, yy - 6, 9, 12); R(ctx, "#ffd34d", x - 3, yy - 5, 7, 10); R(ctx, "#fff6b0", x - 3, yy - 5, 7, 1);
+    R(ctx, "#0a0a14", x - 1, yy - 4, 3, 5); R(ctx, "#0a0a14", x - 1, yy + 2, 3, 2);
+    R(ctx, "#0a0a14", x - 1, yy + 6, 3, 1);
   }
 
-  /* ---- effetti delle azioni ---- */
+  /* ---- effetti ---- */
   function fxBack(t) {
     if (!act || act.state !== "do" || act.name !== "inventory") return;
-    const e = t - act.t0, px = Math.round(player.x), names = ["laptop", "book", "block", "code"];
-    names.forEach((n, i) => {
+    const e = t - act.t0, px = Math.round(player.x);
+    ["laptop", "book", "block", "code"].forEach((n, i) => {
       const a = e * 2.2 + i * Math.PI / 2;
       if (Math.sin(a) < 0) drawIcon(ctx, n, Math.round(px + Math.cos(a) * 24 - 4), Math.round(FOOT - 32 + Math.sin(a) * 7 - 4 + player.hy));
     });
+  }
+  function drawDoorOpen(t) {
+    if (!act || act.state !== "do" || act.name !== "about") return;
+    const e = t - act.t0, k = ease(e / 0.5);
+    R(ctx, "#0a0a14", 262, 102, 14, 23);
+    R(ctx, "#ffd36b", 263, 103, 12, 21); R(ctx, "#ffb84a", 263, 112, 12, 12);
+    R(ctx, "#7a4a1a", 263, 103, Math.round(4 * (1 - k)) + 2, 21);
+    R(ctx, "#2a1a10", 266, 108, 5, 9); R(ctx, "#2a1a10", 267, 105, 3, 3);
+    ctx.fillStyle = "rgba(255,211,107,0.16)"; ctx.beginPath(); ctx.moveTo(263, 124); ctx.lineTo(275, 124); ctx.lineTo(292, 129); ctx.lineTo(250, 129); ctx.closePath(); ctx.fill();
   }
   function fxFront(t) {
     if (!act || act.state !== "do") return;
     const e = t - act.t0, px = Math.round(player.x), n = act.name, hy = Math.round(player.hy);
 
     if (n === "web") {
-      const w = 48, h = 34, x = popX(px, w), y = POP_Y, k = ease(e / 0.3), hh = popup(x, y, w, h, k);
+      const w = 48, h = 34, x = popX(px, w), y = POP_Y, k = ease(e / 0.3);
+      popup(x, y, w, h, k);
       if (k >= 1) {
         R(ctx, "#3d4d99", x, y, w, 5); R(ctx, "#e5484d", x + 2, y + 2, 1, 1); R(ctx, "#ffc857", x + 4, y + 2, 1, 1); R(ctx, "#4ade80", x + 6, y + 2, 1, 1);
         R(ctx, "#1d2a6b", x + 10, y + 1, w - 14, 3);
@@ -507,7 +635,8 @@
     }
 
     if (n === "git") {
-      const w = 58, h = 34, x = popX(px, w), y = POP_Y, k = ease(e / 0.3), hh = popup(x, y, w, h, k);
+      const w = 58, h = 34, x = popX(px, w), y = POP_Y, k = ease(e / 0.3);
+      popup(x, y, w, h, k);
       if (k >= 1) {
         const y0 = y + 25, xs = [x + 8, x + 22, x + 36, x + 50];
         R(ctx, "#2b3a7a", x + 4, y0, Math.round((w - 8) * ease((e - 0.3) / 0.8)), 1);
@@ -515,12 +644,11 @@
         if (e > 0.7) line("#a78bfa", xs[0], y0, bx1, by_);
         if (e > 1.1) line("#a78bfa", bx1, by_, bx1 + Math.round((bx2 - bx1) * ease((e - 1.1) / 0.5)), by_);
         if (e > 1.7) line("#a78bfa", bx2, by_, xs[2], y0);
-        xs.forEach((nx, i) => { if (e > 0.5 + i * 0.5) { R(ctx, "#cfd6e4", nx - 1, y0 - 1, 3, 3); } });
+        xs.forEach((nx, i) => { if (e > 0.5 + i * 0.5) R(ctx, "#cfd6e4", nx - 1, y0 - 1, 3, 3); });
         if (e > 0.9) R(ctx, "#a78bfa", bx1 - 1, by_ - 1, 3, 3);
         if (e > 1.5) R(ctx, "#a78bfa", bx2 - 1, by_ - 1, 3, 3);
         if (e > 2.6) {
-          const pulse = Math.floor(e * 4) % 2 === 0;
-          R(ctx, pulse ? "#4ade80" : "#2fa85c", xs[3] - 2, y0 - 2, 5, 5);
+          R(ctx, Math.floor(e * 4) % 2 === 0 ? "#4ade80" : "#2fa85c", xs[3] - 2, y0 - 2, 5, 5);
           const p = clamp01((e - 2.8) / 1.2), ay = lerp(y0 - 3, y - 6, p), cx = x + w - 6;
           R(ctx, "#0a0a14", cx - 8, y - 14, 18, 9); R(ctx, "#e8eefc", cx - 7, y - 13, 16, 7); R(ctx, "#e8eefc", cx - 4, y - 15, 8, 3);
           if (p < 1) { R(ctx, "#4ade80", xs[3], Math.round(ay), 1, 4); R(ctx, "#4ade80", xs[3] - 1, Math.round(ay) + 1, 3, 1); }
@@ -559,6 +687,21 @@
       every("hearts", e < 2.8 ? e : 99, 0.4, () => addPart({ x: px + (Math.random() * 14 - 7), y: FOOT - 48, vx: (Math.random() - 0.5) * 0.3, vy: -0.45, life: 46, kind: "heart", col: Math.random() > 0.4 ? "#e86f8f" : "#ffc857" }));
     }
 
+    if (n === "about") {
+      every("warm", e, 0.35, () => addPart({ x: 266 + Math.random() * 8, y: 118, vx: (Math.random() - 0.5) * 0.3, vy: -0.3, life: 30, kind: "star", col: "#ffe08a" }));
+    }
+
+    if (n === "quiz") {
+      every("q", e, 0.7, () => addPart({ x: px + (Math.random() * 30 - 15), y: FOOT - 52, vx: (Math.random() - 0.5) * 0.2, vy: -0.4, life: 44, kind: "glyph", ch: "?", col: "#ffd34d" }));
+    }
+    if (n === "vocab") {
+      every("v", e, 0.5, (i) => addPart({ x: px + (Math.random() * 40 - 20), y: FOOT - 46, vx: (Math.random() - 0.5) * 0.3, vy: -0.4, life: 50, kind: "glyph", ch: "ABC"[i % 3], col: "#6ee7d8" }));
+    }
+    if (n === "quest") {
+      once("h", e > 0.05, () => hop(-2));
+      ["#ffd34d", "#ffd34d", "#ffd34d"].forEach((c, i) => { const a = e * 2 + i * 2.1; R(ctx, c, Math.round(px + Math.cos(a) * 18), Math.round(FOOT - 56 + Math.sin(a) * 5), 2, 2); });
+    }
+
     if (n === "book1" || n === "book2") {
       const v = n === "book2" ? 2 : 1, rise = ease(e / 0.6);
       const bY = lerp(FOOT - 32, FOOT - 82, rise) + Math.sin(e * 4) * 1.2;
@@ -577,31 +720,49 @@
       drawPick(hx, hyy, 1, f);
       every("sw", e, 0.22, (i) => { if (i % 2 === 1) { burst(hx + 8, hyy + 2, 3, "#ffe08a", "spark"); blip(220, 0.04, 0.025); } });
       for (let i = 0; i < 6; i++) {
-        const sp = 0.9 + i * 0.6, p = (e - sp) / 0.7;
+        const start = 0.9 + i * 0.6, p = (e - start) / 0.7;
         const lx = boatPos.bx + 10 + i * 9, ly = boatPos.by - 14;
         if (p < 0) continue;
-        if (p < 1) { drawGrass(Math.round(lerp(px + 8, lx, p)), Math.round(lerp(FOOT - 30, ly, p) - Math.sin(p * Math.PI) * 16)); }
+        if (p < 1) drawGrass(Math.round(lerp(px + 8, lx, p)), Math.round(lerp(FOOT - 30, ly, p) - Math.sin(p * Math.PI) * 16));
         else drawGrass(lx, ly);
         once("L" + i, p >= 1, () => { burst(lx + 3, ly + 4, 3, "#9be07a", "spark"); blip(330 + i * 40, 0.05, 0.025); });
       }
     }
   }
-  function drawBoatBlocks() {} // i blocchi sono disegnati da fxFront
+
+  /* ---- reazioni al quiz ---- */
+  function react(good) {
+    if (good) {
+      hop(); burst(player.x, FOOT - 50, 10, "#ffe08a");
+      for (let i = 0; i < 3; i++) addPart({ x: player.x + i * 5 - 5, y: FOOT - 50, vy: -0.5, life: 40, kind: "heart", col: "#e86f8f" });
+      say(["Correct!", "Yes! You know me!", "Nice one!"][Math.floor(Math.random() * 3)]); jingle([660, 880, 1100]);
+    } else {
+      say("Oops… not quite!"); blip(180, 0.18, 0.04);
+      for (let i = 0; i < 3; i++) addPart({ x: player.x + 8 + i * 3, y: FOOT - 46, vy: 0.3, g: 0.02, life: 26, kind: "drop", col: "#6ec6ff" });
+    }
+  }
 
   /* ================= LOOP ================= */
   let last = 0;
+  const POSX = () => (window.innerWidth <= 1100 ? 0.66 : 0.62);
   function sceneToScreen(x, y) {
     const vw = window.innerWidth, vh = window.innerHeight, sc = Math.max(vw / W, vh / H);
-    const posX = vw <= 1100 ? 0.66 : 0.62;
-    return [(vw - W * sc) * posX + x * sc, (vh - H * sc) * 0.5 + y * sc];
+    return [(vw - W * sc) * POSX() + x * sc, (vh - H * sc) * 0.5 + y * sc];
   }
+  function screenToScene(cx, cy) {
+    const vw = window.innerWidth, vh = window.innerHeight, sc = Math.max(vw / W, vh / H);
+    return [(cx - (vw - W * sc) * POSX()) / sc, (cy - (vh - H * sc) * 0.5) / sc];
+  }
+  const nearHotspot = () => HOTSPOTS.find((h) => Math.abs(player.x - h.spot) <= 9);
+  const touchUI = window.matchMedia("(hover: none)").matches;
+
   function frame(ts) {
     requestAnimationFrame(frame);
     if (ts - last < 1000 / 30) return;
     last = ts; tick++;
     const t = ts / 1000; nowT = t;
 
-    // input
+    // input e movimento
     const kl = keys.left && !keys.right, kr = keys.right && !keys.left;
     if (kl || kr) {
       if (act) endAct();
@@ -613,11 +774,22 @@
       else { player.x += Math.sign(dx) * 1.7; player.dir = Math.sign(dx); player.moving = true; }
     }
     player.x = Math.max(MINX, Math.min(MAXX, player.x));
-    // salto
     player.vy += 0.25; player.hy += player.vy; if (player.hy > 0) { player.hy = 0; player.vy = 0; }
-    // fine azione
     if (act && act.state === "do" && t > act.endAt) endAct();
     if (mailbox.downAt && t > mailbox.downAt) { mailbox.flag = false; mailbox.downAt = 0; }
+
+    // stelle da raccogliere
+    STARS.forEach((s, i) => {
+      if (s.got) return;
+      const sy = s.y + Math.sin(t * 3 + s.p) * 2;
+      if (Math.abs(player.x - s.x) < 8 && (Math.abs(FOOT - 22 + player.hy - sy) < 9 || Math.abs(FOOT - 40 + player.hy - sy) < 8)) {
+        s.got = true; game.stars++; setHUD();
+        burst(s.x, sy, 10, "#ffd34d"); blip(880 + game.stars * 80, 0.07, 0.035); setTimeout(() => blip(1320 + game.stars * 60, 0.07, 0.03), 80);
+        addXP(5, game.stars < STARS.length ? `Star ${game.stars}/${STARS.length}` : "");
+        if (game.stars === 3) toast("Tip: some stars are high. Press SPACE to jump!");
+        if (game.stars === STARS.length) award("stars");
+      }
+    });
 
     ctx.drawImage(bg, 0, 0);
     stars.forEach((s) => {
@@ -649,9 +821,19 @@
     glow(ctx, 249, 105, 22, "255,205,110", 0.75);
     glow(ctx, 291, 105, 18, "255,195,100", 0.6);
     glow(ctx, 269, 112, 14, "255,200,100", 0.5);
-
-    // bandierina della cassetta
     if (mailbox.flag) { R(ctx, "#0a0a14", 229, 98, 3, 10); R(ctx, "#ffd36b", 230, 99, 1, 8); R(ctx, "#0a0a14", 227, 98, 6, 5); R(ctx, "#ffc857", 228, 99, 4, 3); }
+    drawDoorOpen(t);
+
+    // stelle
+    STARS.forEach((s) => {
+      if (s.got) return;
+      const sy = Math.round(s.y + Math.sin(t * 3 + s.p) * 2);
+      glow(ctx, s.x, sy, 10, "255,215,90", 0.9);
+      drawStar(s.x - 4, sy - 5);
+    });
+
+    // segnaposto dei luoghi
+    HOTSPOTS.forEach((h) => drawMarker(h.mx, h.my, game.places.has(h.id), t));
 
     fxBack(t);
 
@@ -679,42 +861,85 @@
       ctx.fillStyle = `rgba(255,236,130,${a * 0.25})`; ctx.fillRect(Math.round(f.x) - 1, Math.round(f.y), 3, 1); ctx.fillRect(Math.round(f.x), Math.round(f.y) - 1, 1, 3);
     });
 
-    // fumetto sopra la testa
+    // fumetto e suggerimento di interazione
     if (bub.classList.contains("show")) {
-      const [sx_, sy_] = sceneToScreen(px, py - 50);
+      const [bx, by] = sceneToScreen(px, py - 50);
       const half = Math.min(bub.offsetWidth / 2 + 8, window.innerWidth / 2);
-      bub.style.left = Math.max(half, Math.min(sx_, window.innerWidth - half)) + "px";
-      bub.style.top = Math.max(60, sy_) + "px";
+      bub.style.left = Math.max(half, Math.min(bx, window.innerWidth - half)) + "px";
+      bub.style.top = Math.max(70, by) + "px";
     }
+    const nh = nearHotspot();
+    if (nh && !act && !player.moving) {
+      const [ax, ay] = sceneToScreen(nh.mx, nh.my - 10);
+      promptEl.textContent = touchUI ? "Tap A" : "Press E";
+      promptEl.style.left = ax + "px"; promptEl.style.top = ay + "px"; promptEl.classList.add("show");
+    } else promptEl.classList.remove("show");
   }
   requestAnimationFrame(frame);
 
-  /* ---- controlli tastiera / touch ---- */
-  const setKey = (e, v) => {
+  /* ---- controlli ---- */
+  function interact() {
+    const h = nearHotspot(); if (!h) return;
+    if (h.id === "door") showPanel("about"); // aggiorna anche il menu
+    perform(h.act(), { restart: true });
+  }
+  function jump() { hop(-2.6); }
+  window.addEventListener("keydown", (e) => {
     const k = e.key;
-    if (k === "ArrowLeft" || k === "a" || k === "A") keys.left = v;
-    else if (k === "ArrowRight" || k === "d" || k === "D") keys.right = v;
-  };
-  window.addEventListener("keydown", (e) => setKey(e, true));
-  window.addEventListener("keyup", (e) => setKey(e, false));
+    if (k === "ArrowLeft" || k === "a" || k === "A") keys.left = true;
+    else if (k === "ArrowRight" || k === "d" || k === "D") keys.right = true;
+    else if (k === " ") { e.preventDefault(); if (!e.repeat) jump(); }
+    else if ((k === "e" || k === "E") && !e.repeat) interact();
+  });
+  window.addEventListener("keyup", (e) => {
+    const k = e.key;
+    if (k === "ArrowLeft" || k === "a" || k === "A") keys.left = false;
+    else if (k === "ArrowRight" || k === "d" || k === "D") keys.right = false;
+    else if (k === " ") e.preventDefault();
+  });
+  window.addEventListener("blur", () => { keys.left = keys.right = false; });
   [["goLeft", "left"], ["goRight", "right"]].forEach(([id, k]) => {
     const el = document.getElementById(id);
     el.addEventListener("pointerdown", (e) => { e.preventDefault(); keys[k] = true; });
     ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => el.addEventListener(ev, () => { keys[k] = false; }));
   });
+  document.getElementById("goJump").addEventListener("pointerdown", (e) => { e.preventDefault(); jump(); });
+  document.getElementById("goAct").addEventListener("pointerdown", (e) => { e.preventDefault(); interact(); });
+
+  // clic sulla scena: cammina o interagisci con gli oggetti
+  function hotspotAt(sx_, sy_) { return HOTSPOTS.find((h) => sx_ >= h.bx[0] && sx_ <= h.bx[2] && sy_ >= h.bx[1] && sy_ <= h.bx[3]); }
+  cv.addEventListener("click", (e) => {
+    const [sx_, sy_] = screenToScene(e.clientX, e.clientY);
+    const h = hotspotAt(sx_, sy_);
+    if (h) { if (h.id === "door") showPanel("about"); perform(h.act(), { restart: true }); return; }
+    endAct(); player.target = Math.max(MINX, Math.min(MAXX, sx_));
+  });
+  cv.addEventListener("pointermove", (e) => {
+    const [sx_, sy_] = screenToScene(e.clientX, e.clientY);
+    cv.style.cursor = hotspotAt(sx_, sy_) ? "pointer" : "default";
+  });
 
   /* ================= INTERFACCIA ================= */
   const buttons = [...document.querySelectorAll("#menu button")];
-  const PANEL_ACT = { profile: "profile", skills: "stats", inventory: "inventory", facts: "facts" };
+  const PANEL_ACT = { profile: "profile", skills: "stats", about: "about", inventory: "inventory", facts: "facts", quiz: "quiz", vocab: "vocab", quest: "quest" };
   let current = 0;
+  function showPanel(name) {
+    const i = buttons.findIndex((b) => b.dataset.panel === name);
+    if (i >= 0) show(i, false, false);
+  }
   function show(i, sound, silent) {
     current = (i + buttons.length) % buttons.length;
     buttons.forEach((bt, n) => bt.classList.toggle("sel", n === current));
     const name = buttons[current].dataset.panel;
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "p-" + name));
     if (name === "skills") fillStats();
-    if (sound) blip(660 + current * 90);
-    if (!silent) perform(PANEL_ACT[name], { hold: name === "facts" });
+    if (name === "quiz" && !quiz.running) renderQuiz();
+    if (name === "quest") renderQuest();
+    if (sound) blip(660 + current * 70);
+    if (!silent) {
+      if (["profile", "skills", "about", "inventory"].includes(name)) setTimeout(() => award(name), 600);
+      perform(PANEL_ACT[name], { hold: ["facts", "quiz", "vocab"].includes(name) });
+    }
   }
   buttons.forEach((bt, i) => {
     bt.addEventListener("click", () => show(i, true));
@@ -730,12 +955,12 @@
     const name = el.dataset.act;
     el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") perform(name, { hold: true }); });
     el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") release(name); });
-    el.addEventListener("focus", () => perform(name, { hold: true }));
+    el.addEventListener("focus", () => { if (el.matches(":focus-visible")) perform(name, { hold: true }); });
     el.addEventListener("blur", () => release(name));
-    el.addEventListener("click", () => { perform(name); blip(740, 0.05); });
+    el.addEventListener("click", () => { perform(name, { restart: true }); blip(740, 0.05); });
   });
 
-  /* ---- statistiche ---- */
+  /* ---- skills ---- */
   const statsBox = document.getElementById("stats");
   STATS.forEach(([n, v]) => {
     const row = document.createElement("div");
@@ -753,12 +978,12 @@
     });
   }
 
-  /* ---- fun facts sbloccabili ---- */
+  /* ---- fun facts ---- */
   const unlocked = new Set();
   const factList = document.getElementById("factList"), found = document.getElementById("found");
   function renderFacts() {
     factList.innerHTML = FACTS.map((f, i) => unlocked.has(i)
-      ? `<li class="open"><span>★</span>${f}</li>` : `<li class="locked"><span>🔒</span>??? keep talking</li>`).join("");
+      ? `<li class="open"><span>★</span>${f}</li>` : `<li class="locked"><span>?</span>??? keep talking</li>`).join("");
     found.textContent = `${unlocked.size}/${FACTS.length}`;
   }
   renderFacts();
@@ -769,10 +994,69 @@
     const i = pool[Math.floor(Math.random() * pool.length)];
     if (act && act.state === "walk") { act.state = "do"; act.t0 = nowT; act.endAt = Infinity; }
     say(FACTS[i], 26);
-    if (!unlocked.has(i)) { unlocked.add(i); renderFacts(); burst(player.x, FOOT - 50, 10, "#ffe08a"); jingle([660, 880]); }
+    if (!unlocked.has(i)) {
+      unlocked.add(i); renderFacts(); burst(player.x, FOOT - 50, 10, "#ffe08a"); jingle([660, 880]);
+      if (unlocked.size === FACTS.length) award("facts");
+    }
     hop(-2);
   });
 
+  /* ---- quiz ---- */
+  const quizBox = document.getElementById("quizBox");
+  const quiz = { i: 0, score: 0, answered: false, running: false, paid: false };
+  function renderQuiz() {
+    if (!quiz.running) {
+      quizBox.innerHTML = `<p class="qintro">5 questions about me. Ready to play?</p><button type="button" class="action" id="qstart">▶ Start quiz</button>`;
+      document.getElementById("qstart").addEventListener("click", () => { quiz.i = 0; quiz.score = 0; quiz.answered = false; quiz.running = true; blip(740); renderQuiz(); });
+      return;
+    }
+    if (quiz.i >= QUIZ.length) {
+      const s = quiz.score, msg = s === QUIZ.length ? "Perfect! You really know me." : s >= 3 ? "Great job! You know me quite well." : "Not bad! Play again to learn more about me.";
+      quizBox.innerHTML = `<p class="qres">Score: <b>${s}/${QUIZ.length}</b></p><p class="qintro">${msg}</p><button type="button" class="action" id="qagain">▶ Play again</button>`;
+      document.getElementById("qagain").addEventListener("click", () => { quiz.running = false; renderQuiz(); });
+      if (!quiz.paid) { quiz.paid = true; addXP(s * 10, `Quiz score ${s}/${QUIZ.length}`); award("quiz"); }
+      say(s === QUIZ.length ? "Perfect score! You're a pro." : "Thanks for playing!");
+      if (s === QUIZ.length) { hop(); burst(player.x, FOOT - 50, 14, "#ffd34d"); }
+      return;
+    }
+    const q = QUIZ[quiz.i];
+    quizBox.innerHTML = `<p class="qhead">Question ${quiz.i + 1}/${QUIZ.length} · Score ${quiz.score}</p><p class="qtext">${q.q}</p>` +
+      `<div class="qopts">${q.a.map((a, n) => `<button type="button" class="qopt" data-n="${n}">${a}</button>`).join("")}</div><p class="qfb" id="qfb"></p>`;
+    quizBox.querySelectorAll(".qopt").forEach((b) => b.addEventListener("click", () => answer(Number(b.dataset.n))));
+  }
+  function answer(n) {
+    if (quiz.answered) return;
+    quiz.answered = true;
+    const q = QUIZ[quiz.i], ok = n === q.c;
+    if (ok) quiz.score++;
+    quizBox.querySelectorAll(".qopt").forEach((b, idx) => { b.disabled = true; if (idx === q.c) b.classList.add("right"); else if (idx === n) b.classList.add("wrong"); });
+    document.getElementById("qfb").innerHTML = `${ok ? "Correct!" : "Not quite."} ${q.fb} <button type="button" class="action small" id="qnext">${quiz.i === QUIZ.length - 1 ? "▶ See result" : "▶ Next"}</button>`;
+    document.getElementById("qnext").addEventListener("click", () => { quiz.i++; quiz.answered = false; renderQuiz(); blip(700); });
+    react(ok);
+  }
+
+  /* ---- tech words ---- */
+  const vocabBox = document.getElementById("vocabBox"), vfound = document.getElementById("vfound");
+  vocabBox.innerHTML = VOCAB.map((v, i) => `<div class="vcard" data-i="${i}">
+      <button type="button" class="vhead" aria-expanded="false"><b>${v.w}</b><span>${v.ph}</span></button>
+      <div class="vbody"><p>${v.d}</p><p class="ex">“${v.ex}”</p><button type="button" class="listen" data-w="${v.w}">♪ Listen</button></div></div>`).join("");
+  vocabBox.querySelectorAll(".vcard").forEach((card) => {
+    const i = Number(card.dataset.i), head = card.querySelector(".vhead");
+    head.addEventListener("click", () => {
+      const open = card.classList.toggle("open"); head.setAttribute("aria-expanded", String(open));
+      blip(open ? 760 : 520, 0.05);
+      if (open) {
+        if (act && act.name === "vocab" && act.state === "do") say(`“${VOCAB[i].w}”: ${VOCAB[i].ex}`, 20);
+        game.flipped.add(i); vfound.textContent = `${game.flipped.size}/${VOCAB.length}`;
+        if (game.flipped.size === VOCAB.length) award("vocab");
+      }
+    });
+    card.querySelector(".listen").addEventListener("click", (e) => { e.stopPropagation(); speak(VOCAB[i].w + ". " + VOCAB[i].ex); });
+  });
+
+  /* ---- avvio ---- */
+  setHUD();
   show(0, false, true);
-  setTimeout(() => perform("profile"), 700);
+  setTimeout(() => { if (!act) perform("profile"); }, 700);
+  setTimeout(() => toast(touchUI ? "Use the buttons to walk, jump and interact" : "Arrows walk · SPACE jumps · E interacts · click the pier"), 2200);
 })();

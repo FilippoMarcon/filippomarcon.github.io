@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Filippo Marcon · Press Start</title>
-  <meta name="description" content="Filippo Marcon's interactive 2D pixel-art portfolio.">
+  <meta name="description" content="Filippo Marcon's interactive 2D pixel-art game-portfolio: explore the pier, collect stars, take the quiz.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;700&display=swap" rel="stylesheet">
@@ -14,10 +14,18 @@
   <canvas id="scene" aria-label="Pixel-art scene: a night-time pier where Filippo reacts to everything you open"></canvas>
   <div class="vignette"></div>
   <div id="bubble" role="status" aria-live="polite"></div>
+  <div id="prompt"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
 
   <div class="ui">
     <header class="hud">
-      <span>LV.19 &nbsp;FILIPPO</span>
+      <span class="who">LV.19 &nbsp;FILIPPO</span>
+      <div class="xp" aria-label="Visitor progress">
+        <span id="lv">LV.1</span>
+        <div class="xpbar" id="xpbar" aria-hidden="true"></div>
+        <span id="xpnum">0 XP</span>
+        <span id="starnum" class="starnum">★ 0/6</span>
+      </div>
       <button type="button" id="snd" class="snd" aria-pressed="true">♪ SOUND ON</button>
     </header>
 
@@ -28,8 +36,12 @@
       <nav id="menu" aria-label="Main menu">
         <button type="button" data-panel="profile" class="sel">Profile</button>
         <button type="button" data-panel="skills">Skills</button>
+        <button type="button" data-panel="about">About me</button>
         <button type="button" data-panel="inventory">Inventory</button>
         <button type="button" data-panel="facts">Fun facts</button>
+        <button type="button" data-panel="quiz">Quiz</button>
+        <button type="button" data-panel="vocab">Tech words</button>
+        <button type="button" data-panel="quest">Quest log</button>
       </nav>
 
       <div class="window" id="window">
@@ -39,8 +51,6 @@
           <dl>
             <dt>Player</dt><dd>Filippo Marcon · 19 · Caorle, Italy</dd>
             <dt>Class</dt><dd>Computer science student</dd>
-            <dt>Interests</dt>
-            <dd><ul class="chips"><li>Programming</li><li>Computer science</li><li>Technology</li></ul></dd>
             <dt>Abilities</dt>
             <dd><ul class="chips"><li>HTML / CSS</li><li>JavaScript</li><li>Git / GitHub</li></ul></dd>
             <dt>Personal bug</dt>
@@ -55,6 +65,18 @@
           <h3>Perks</h3>
           <ul class="chips gold"><li>Night Owl</li><li>Keyboard Warrior</li><li>Published Author</li></ul>
           <p class="note">Rough estimates.</p>
+        </article>
+
+        <!-- ABOUT -->
+        <article class="panel" id="p-about">
+          <h2>About me</h2>
+          <div class="story">
+            <p><b>Hi! My name is Filippo.</b> I'm 19 and I come from Caorle, a small seaside town in the north of Italy.</p>
+            <p>I study computer science because I love technology and programming. My favourite thing is turning a curious idea into something real, like a website, a game or a book.</p>
+            <p>I've published books on Amazon and I run a Minecraft server. I built this page to introduce myself in English, so welcome to my world!</p>
+          </div>
+          <h3>Three words about me</h3>
+          <ul class="chips gold"><li>Curious</li><li>Creative</li><li>Night owl</li></ul>
         </article>
 
         <!-- INVENTORY -->
@@ -76,6 +98,26 @@
           <ul class="facts" id="factList"></ul>
           <button type="button" id="btn" class="action">▶ Talk to Filippo</button>
         </article>
+
+        <!-- QUIZ -->
+        <article class="panel" id="p-quiz">
+          <h2>How well do you know me?</h2>
+          <div id="quizBox"></div>
+        </article>
+
+        <!-- TECH WORDS -->
+        <article class="panel" id="p-vocab">
+          <h2>Tech words</h2>
+          <p class="note top">English words I use when I code. Open them all! <b id="vfound">0/6</b></p>
+          <div id="vocabBox" class="vocab"></div>
+        </article>
+
+        <!-- QUEST LOG -->
+        <article class="panel" id="p-quest">
+          <h2>Quest log</h2>
+          <p class="note top">Complete everything to finish the game. <b id="qfound">0/10</b> done.</p>
+          <ul class="qlog" id="qlog"></ul>
+        </article>
       </div>
     </section>
 
@@ -87,7 +129,7 @@
     </aside>
 
     <section class="board" aria-label="Quest board">
-      <h2 class="board-title">Quest board <span>· hover a quest</span></h2>
+      <h2 class="board-title">Quest board · hover a quest</h2>
       <div class="cards">
         <button type="button" class="card" data-act="web">
           <canvas class="icon" data-icon="laptop" width="8" height="8"></canvas>
@@ -108,11 +150,22 @@
       </div>
     </section>
 
-    <div class="controls" aria-hidden="true">
-      <button type="button" id="goLeft">◀</button>
-      <button type="button" id="goRight">▶</button>
+    <div class="controls" aria-label="Touch controls">
+      <button type="button" id="goLeft" aria-label="Walk left">◀</button>
+      <button type="button" id="goJump" aria-label="Jump">▲</button>
+      <button type="button" id="goAct" aria-label="Interact">A</button>
+      <button type="button" id="goRight" aria-label="Walk right">▶</button>
     </div>
-    <p class="hint">↑ ↓ menu &nbsp;·&nbsp; ← → move Filippo &nbsp;·&nbsp; hover the quests</p>
+  </div>
+
+  <div id="finale" class="finale" hidden>
+    <div class="finale-card">
+      <p class="fin-tag">GAME COMPLETE</p>
+      <h2>You explored my whole world!</h2>
+      <p>Thank you for visiting, and for reading my page. I hope you enjoyed getting to know me.</p>
+      <p class="sign">— Filippo</p>
+      <button type="button" id="finClose" class="action">▶ Keep exploring</button>
+    </div>
   </div>
 
   <script src="script.js"></script>

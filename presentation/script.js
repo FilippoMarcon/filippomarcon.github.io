@@ -40,7 +40,7 @@
   for (let y = 0; y < HOR; y++) for (let x = 0; x < W; x++) R(b, skyAt(x, y), x, y, 1, 1);
 
   /* ---- luna ---- */
-  const MX = 236, MY = 34;
+  const MX = 205, MY = 34;
   for (let y = MY - 34; y <= MY + 34; y++) for (let x = MX - 34; x <= MX + 34; x++) {
     const d = Math.hypot(x - MX, y - MY);
     if (d <= 13) {
@@ -225,22 +225,24 @@
   }
 
   /* ---- barca ---- */
+  const boatPos = { bx: 160, by: 143 };
   function drawBoat(c, t) {
-    const bx = 38, by = 143 + Math.round(Math.sin(t * 1.4));
+    const bx = boatPos.bx, by = 143 + Math.round(Math.sin(t * 1.4));
+    boatPos.by = by;
     for (let i = 0; i < 11; i++) {
       const inset = Math.round(i * 0.9), y = by - 8 + i;
       R(c, i === 0 ? "#9a6a3a" : (i % 3 === 0 ? "#4a2f1b" : "#6b4423"), bx + inset, y, 68 - inset * 2, 1);
     }
     R(c, "#2a1a10", bx + 6, by - 8, 56, 2); R(c, "#9a6a3a", bx, by - 9, 68, 1);
-    R(c, "#3b2615", 63, by - 20, 2, 12); R(c, "#2a1a10", 60, by - 22, 8, 2);
-    R(c, "#ffd36b", 61, by - 20, 6, 5); R(c, "#2a1a10", 60, by - 15, 8, 1);
-    R(c, "#e8e0b8", 24, by - 2, 14, 1); R(c, "#e8e0b8", 90, by - 3, 10, 1);
-    R(c, "#c9b27a", 100, by - 10, 4, 1);
-    c.fillStyle = "rgba(255,200,110,0.18)"; c.fillRect(56, by + 3, 16, 1);
-    return { x: 64, y: by - 18 };
+    R(c, "#3b2615", bx + 4, by - 16, 2, 8); R(c, "#2a1a10", bx + 3, by - 20, 4, 1); R(c, "#2a1a10", bx + 3, by - 17, 4, 1);
+    R(c, "#ffd36b", bx + 4, by - 19, 2, 2);
+    R(c, "#e8e0b8", bx - 14, by - 2, 14, 1); R(c, "#e8e0b8", bx + 52, by - 3, 10, 1);
+    R(c, "#c9b27a", bx + 62, by - 10, 4, 1);
+    c.fillStyle = "rgba(255,200,110,0.18)"; c.fillRect(bx + 18, by + 3, 16, 1);
+    return { x: bx + 5, y: by - 18 };
   }
 
-  /* ================= PERSONAGGIO ================= */
+  /* ================= SPRITE ================= */
   const [sp, sx] = mk(30, 46);
   function drawSprite(bob, step, blink) {
     sx.clearRect(0, 0, 30, 46);
@@ -288,35 +290,342 @@
     add.forEach(([x, y]) => R(sx, "#0a0a14", x, y, 1, 1));
   }
 
-  const player = { x: 178, dir: 1, moving: false, step: 0 };
+  /* ================= DATI ================= */
+  const STATS = [
+    ["HTML / CSS", 75], ["JavaScript", 65], ["PHP", 55], ["SQL", 50], ["Python", 35], ["Git / GitHub", 60], ["Sleep resistance", 90]
+  ];
+  const ICONS = {
+    palette: { r: "#c0392b", R: "#7a1f17", w: "#f4e9c8", L: "#8a93a6", l: "#cfd6e4", c: "#16264d", g: "#4ade80", u: "#38bdf8", G: "#5fbf3f", H: "#3f9a2a", D: "#8a5a30", d: "#6b4423", y: "#ffc857", t: "#6ee7d8", n: "#2a3d99", N: "#0f1a4a", p: "#e86f8f", P: "#a8325a" },
+    book: ["NNNNNNN.", "NnnnnnNw", "NnyyynNw", "NnnnnnNw", "NnnyynNw", "NnnnnnNw", "NNNNNNNw", ".wwwwww."],
+    book2: ["PPPPPPP.", "PppppppW".replace("W", "w"), "PpyyyppW".replace("W", "w"), "PpppyppW".replace("W", "w"), "PpyyyppW".replace("W", "w"), "PpppppW_".replace("W_", "pw"), "PPPPPPPw", ".wwwwww."],
+    laptop: ["........", ".LLLLLL.", ".LccccL.", ".LgucuL.", ".LccccL.", ".LLLLLL.", "llllllll", ".lLLLLl."],
+    block: ["GGGGGGGG", "GHGGGHGG", "DDDDDDDD", "DdDDDdDD", "DDDdDDDD", "DdDDDDdD", "DDDDdDDD", "dDDDDDDd"],
+    code: ["........", ".t....t.", "t.t..t.t", "t..y.t.t", "t.t.yt.t", ".t..y.t.", "........", "........"]
+  };
+  function drawIcon(c, name, x, y) {
+    ICONS[name].forEach((row, yy) => [...row].forEach((ch, xx) => {
+      const col = ICONS.palette[ch]; if (col) R(c, col, x + xx, y + yy, 1, 1);
+    }));
+  }
+  document.querySelectorAll("canvas.icon").forEach((cnv) => {
+    const c = cnv.getContext("2d"); drawIcon(c, cnv.dataset.icon, 0, 0);
+  });
+
+  const FACTS = [
+    "I've published books on Amazon.",
+    "I love building web projects and experimenting with new tech.",
+    "I run a Minecraft server and build projects around gaming."
+  ];
+
+  /* ================= AUDIO ================= */
+  let audio, soundOn = true;
+  function blip(f = 660, d = 0.05, vol = 0.03) {
+    if (!soundOn) return;
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      const o = audio.createOscillator(), g = audio.createGain();
+      o.type = "square"; o.frequency.value = f; g.gain.value = vol;
+      o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + d);
+    } catch (e) { /* audio not available */ }
+  }
+  function jingle(notes) { notes.forEach((n, i) => setTimeout(() => blip(n, 0.08, 0.03), i * 90)); }
+  const sndBtn = document.getElementById("snd");
+  sndBtn.addEventListener("click", () => {
+    soundOn = !soundOn;
+    sndBtn.textContent = soundOn ? "♪ SOUND ON" : "♪ SOUND OFF";
+    sndBtn.setAttribute("aria-pressed", String(soundOn));
+    blip(880, 0.06);
+  });
+
+  /* ================= PERSONAGGIO E AZIONI ================= */
+  const FOOT = 128, MINX = 128, MAXX = 296;
+  const player = { x: 178, dir: 1, moving: false, hy: 0, vy: 0, target: null };
   const keys = { left: false, right: false };
-  const MINX = 128, MAXX = 296;
+  const SPOTS = { web: 158, mc: 186, book1: 208, book2: 208, git: 142, profile: null, stats: null, inventory: null, facts: null };
+  const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, facts: Infinity };
+  const SAYS = {
+    web: "Building something new…",
+    book1: "“3:17” is out on Amazon!",
+    book2: "“Diary of a Content Creator” is out on Amazon!",
+    mc: "Server online. Come play!",
+    git: "git push origin main",
+    profile: "Hi! I'm Filippo. Welcome to my world!",
+    stats: "Skill check… not bad!",
+    inventory: "Let me check my bag…",
+    facts: "Ask away! Well, press the button."
+  };
+  const mailbox = { flag: false, downAt: 0 };
+  const parts = [];
+  let act = null, nowT = 0, tick = 0;
+
+  const bub = document.getElementById("bubble");
+  let btimer = null;
+  function say(text, speed = 24) {
+    clearInterval(btimer); bub.classList.add("show"); bub.textContent = "";
+    let i = 0;
+    btimer = setInterval(() => {
+      bub.textContent = text.slice(0, ++i);
+      if (i % 3 === 0) blip(540, 0.02, 0.02);
+      if (i >= text.length) clearInterval(btimer);
+    }, speed);
+  }
+  function hideBubble() { clearInterval(btimer); bub.classList.remove("show"); }
+
+  function perform(name, opts = {}) {
+    if (act && act.name === name) { if (opts.hold) act.hold = true; return; }
+    hideBubble();
+    if (act) clearActProps();
+    act = { name, state: "walk", t0: 0, endAt: 0, hold: !!opts.hold, fired: {}, last: {} };
+    syncActive();
+    const spot = SPOTS[name];
+    if (spot == null) { player.target = null; arrive(nowT); }
+    else player.target = spot;
+  }
+  function release(name) {
+    if (act && act.name === name && act.hold) {
+      act.hold = false;
+      if (act.state === "do") act.endAt = Math.max(nowT + 0.8, act.t0 + 2.6);
+    }
+  }
+  function arrive(t) {
+    if (!act) return;
+    act.state = "do"; act.t0 = t;
+    act.endAt = act.hold ? Infinity : t + DUR[act.name];
+    if (act.name !== "facts" || true) say(SAYS[act.name]);
+    if (act.name === "web" || act.name === "git" || act.name.startsWith("book") || act.name === "mc") player.dir = 1;
+    blip(520, 0.05); setTimeout(() => blip(780, 0.06), 70);
+  }
+  function clearActProps() {
+    if (mailbox.flag) mailbox.downAt = nowT + 2;
+    blocks.length = 0;
+  }
+  function syncActive() { document.querySelectorAll(".card").forEach((c) => c.classList.toggle("active", !!act && c.dataset.act === act.name)); }
+  function endAct() { if (act) clearActProps(); act = null; hideBubble(); syncActive(); }
+
+  function hop(v = -2.4) { if (player.hy === 0) player.vy = v; }
+  function once(key, cond, fn) { if (cond && !act.fired[key]) { act.fired[key] = true; fn(); } }
+  function every(key, e, iv, fn) { const n = Math.floor(e / iv); if (act.last[key] !== n) { act.last[key] = n; fn(n); } }
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
+  const ease = (v) => { v = clamp01(v); return 1 - Math.pow(1 - v, 3); };
+  const lerp = (a, b, t) => a + (b - a) * t;
+
+  /* ---- particelle ---- */
+  function addPart(p) { parts.push(Object.assign({ vx: 0, vy: 0, g: 0, life: 30, max: 30, kind: "spark", col: "#fff" }, p, { max: p.life || 30 })); }
+  function burst(x, y, n, col, kind = "star") {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * 6.28, s = 0.3 + Math.random() * 0.8;
+      addPart({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 0.4, g: 0.02, life: 26 + Math.random() * 14, kind, col });
+    }
+  }
+  function drawParts() {
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i]; p.x += p.vx; p.y += p.vy; p.vy += p.g; p.life--;
+      if (p.life <= 0) { parts.splice(i, 1); continue; }
+      ctx.globalAlpha = Math.min(1, p.life / (p.max * 0.5));
+      const x = Math.round(p.x), y = Math.round(p.y);
+      if (p.kind === "star") { R(ctx, p.col, x, y, 1, 1); R(ctx, p.col, x - 1, y, 1, 1); R(ctx, p.col, x + 1, y, 1, 1); R(ctx, p.col, x, y - 1, 1, 1); R(ctx, p.col, x, y + 1, 1, 1); }
+      else if (p.kind === "bit") R(ctx, p.col, x, y, 2, 2);
+      else if (p.kind === "heart") {
+        [[1, 0], [3, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [1, 2], [2, 2], [3, 2], [2, 3]].forEach(([dx, dy]) => R(ctx, p.col, x + dx, y + dy, 1, 1));
+      } else R(ctx, p.col, x, y, 1, 1);
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  /* ---- utilità di disegno ---- */
+  function line(col, x0, y0, x1, y1) {
+    x0 = Math.round(x0); y0 = Math.round(y0); x1 = Math.round(x1); y1 = Math.round(y1);
+    const dx = Math.abs(x1 - x0), dy = -Math.abs(y1 - y0), sx_ = x0 < x1 ? 1 : -1, sy_ = y0 < y1 ? 1 : -1;
+    let err = dx + dy;
+    for (;;) {
+      R(ctx, col, x0, y0, 1, 1);
+      if (x0 === x1 && y0 === y1) break;
+      const e2 = 2 * err;
+      if (e2 >= dy) { err += dy; x0 += sx_; }
+      if (e2 <= dx) { err += dx; y0 += sy_; }
+    }
+  }
+  function popup(x, y, w, h, k) {
+    const hh = Math.max(3, Math.round(h * k));
+    R(ctx, "#0a0a14", x - 2, y - 2, w + 4, hh + 4); R(ctx, "#cfd6e4", x - 1, y - 1, w + 2, hh + 2); R(ctx, "#0f1840", x, y, w, hh);
+    return hh;
+  }
+  const POP_Y = 22;
+  const popX = (px, w) => Math.round(Math.max(124, Math.min(px - 18, 218 - w)));
+
+  /* ---- libri, lettera, blocchi, piccone ---- */
+  function drawBookSprite(x, y, v) {
+    const cover = v === 2 ? "#e86f8f" : "#2a3d99", dark = v === 2 ? "#a8325a" : "#0f1a4a", gold = "#ffc857";
+    R(ctx, "#0a0a14", x - 1, y - 1, 13, 16);
+    R(ctx, dark, x, y, 12, 14); R(ctx, cover, x + 2, y, 10, 14); R(ctx, "#f4e9c8", x + 11, y + 1, 1, 12);
+    if (v === 2) { R(ctx, gold, x + 6, y + 3, 2, 4); R(ctx, gold, x + 5, y + 4, 4, 2); R(ctx, "#fff", x + 4, y + 9, 6, 2); R(ctx, "#0a0a14", x + 6, y + 9, 2, 2); }
+    else { R(ctx, gold, x + 5, y + 3, 4, 1); R(ctx, gold, x + 5, y + 5, 4, 1); R(ctx, gold, x + 5, y + 7, 4, 1); R(ctx, gold, x + 4, y + 10, 6, 1); R(ctx, gold, x + 5, y + 4, 1, 3); }
+  }
+  function drawEnvelope(x, y) {
+    R(ctx, "#0a0a14", x - 1, y - 1, 10, 8); R(ctx, "#f4e9c8", x, y, 8, 6);
+    line("#c9b27a", x, y, x + 3, y + 3); line("#c9b27a", x + 7, y, x + 4, y + 3); R(ctx, "#e5484d", x + 3, y + 3, 2, 2);
+  }
+  const blocks = [];
+  function drawGrass(x, y) {
+    R(ctx, "#0a0a14", x - 1, y - 1, 8, 8); R(ctx, "#5fbf3f", x, y, 6, 2); R(ctx, "#8a5a30", x, y + 2, 6, 4); R(ctx, "#6b4423", x + 1, y + 3, 1, 1); R(ctx, "#6b4423", x + 4, y + 4, 1, 1); R(ctx, "#3f9a2a", x + 2, y, 1, 1);
+  }
+  function drawPick(hx, hy, dir, f) {
+    if (f === 0) {
+      line("#6b4423", hx, hy, hx + 7 * dir, hy - 9);
+      R(ctx, "#0a0a14", hx + 7 * dir - 3, hy - 11, 7, 4); R(ctx, "#cfd6e4", hx + 7 * dir - 2, hy - 10, 5, 2);
+    } else {
+      line("#6b4423", hx, hy, hx + 8 * dir, hy + 2);
+      R(ctx, "#0a0a14", hx + 8 * dir - 2, hy - 3, 4, 8); R(ctx, "#cfd6e4", hx + 8 * dir - 1, hy - 2, 2, 6);
+    }
+  }
+
+  /* ---- effetti delle azioni ---- */
+  function fxBack(t) {
+    if (!act || act.state !== "do" || act.name !== "inventory") return;
+    const e = t - act.t0, px = Math.round(player.x), names = ["laptop", "book", "block", "code"];
+    names.forEach((n, i) => {
+      const a = e * 2.2 + i * Math.PI / 2;
+      if (Math.sin(a) < 0) drawIcon(ctx, n, Math.round(px + Math.cos(a) * 24 - 4), Math.round(FOOT - 32 + Math.sin(a) * 7 - 4 + player.hy));
+    });
+  }
+  function fxFront(t) {
+    if (!act || act.state !== "do") return;
+    const e = t - act.t0, px = Math.round(player.x), n = act.name, hy = Math.round(player.hy);
+
+    if (n === "web") {
+      const w = 48, h = 34, x = popX(px, w), y = POP_Y, k = ease(e / 0.3), hh = popup(x, y, w, h, k);
+      if (k >= 1) {
+        R(ctx, "#3d4d99", x, y, w, 5); R(ctx, "#e5484d", x + 2, y + 2, 1, 1); R(ctx, "#ffc857", x + 4, y + 2, 1, 1); R(ctx, "#4ade80", x + 6, y + 2, 1, 1);
+        R(ctx, "#1d2a6b", x + 10, y + 1, w - 14, 3);
+        R(ctx, "#38bdf8", x + 3, y + 8, Math.round((w - 6) * ease((e - 0.4) / 0.8)), 3);
+        R(ctx, "#4ade80", x + 3, y + 13, Math.round(20 * ease((e - 1.2) / 0.5)), 9);
+        R(ctx, "#ffc857", x + 25, y + 13, Math.round(20 * ease((e - 1.9) / 0.5)), 9);
+        R(ctx, "#e86f8f", x + 3, y + 24, Math.round((w - 6) * ease((e - 2.6) / 0.6)), 5);
+        if (Math.floor(e * 3) % 2 === 0) R(ctx, "#fff", x + w - 8, y + 30, 3, 2);
+      }
+      every("bit", e, 0.16, () => addPart({ x: px + (Math.random() * 8 - 4), y: FOOT - 26, vx: (Math.random() - 0.3) * 0.4, vy: -0.5 - Math.random() * 0.4, life: 40, kind: "bit", col: Math.random() > 0.5 ? "#4ade80" : "#38bdf8" }));
+    }
+
+    if (n === "git") {
+      const w = 58, h = 34, x = popX(px, w), y = POP_Y, k = ease(e / 0.3), hh = popup(x, y, w, h, k);
+      if (k >= 1) {
+        const y0 = y + 25, xs = [x + 8, x + 22, x + 36, x + 50];
+        R(ctx, "#2b3a7a", x + 4, y0, Math.round((w - 8) * ease((e - 0.3) / 0.8)), 1);
+        const bx1 = x + 15, bx2 = x + 29, by_ = y + 14;
+        if (e > 0.7) line("#a78bfa", xs[0], y0, bx1, by_);
+        if (e > 1.1) line("#a78bfa", bx1, by_, bx1 + Math.round((bx2 - bx1) * ease((e - 1.1) / 0.5)), by_);
+        if (e > 1.7) line("#a78bfa", bx2, by_, xs[2], y0);
+        xs.forEach((nx, i) => { if (e > 0.5 + i * 0.5) { R(ctx, "#cfd6e4", nx - 1, y0 - 1, 3, 3); } });
+        if (e > 0.9) R(ctx, "#a78bfa", bx1 - 1, by_ - 1, 3, 3);
+        if (e > 1.5) R(ctx, "#a78bfa", bx2 - 1, by_ - 1, 3, 3);
+        if (e > 2.6) {
+          const pulse = Math.floor(e * 4) % 2 === 0;
+          R(ctx, pulse ? "#4ade80" : "#2fa85c", xs[3] - 2, y0 - 2, 5, 5);
+          const p = clamp01((e - 2.8) / 1.2), ay = lerp(y0 - 3, y - 6, p), cx = x + w - 6;
+          R(ctx, "#0a0a14", cx - 8, y - 14, 18, 9); R(ctx, "#e8eefc", cx - 7, y - 13, 16, 7); R(ctx, "#e8eefc", cx - 4, y - 15, 8, 3);
+          if (p < 1) { R(ctx, "#4ade80", xs[3], Math.round(ay), 1, 4); R(ctx, "#4ade80", xs[3] - 1, Math.round(ay) + 1, 3, 1); }
+          once("gitdone", p >= 1, () => { burst(cx, y - 10, 8, "#4ade80"); jingle([660, 880, 1100]); });
+        }
+      }
+      every("bit", e, 0.3, () => addPart({ x: px + (Math.random() * 8 - 4), y: FOOT - 26, vy: -0.5, life: 34, kind: "bit", col: "#a78bfa" }));
+    }
+
+    if (n === "stats") {
+      once("hop", e > 0.05, () => hop());
+      const w = 48, h = 36, x = popX(px, w), y = POP_Y, k = ease(e / 0.3);
+      popup(x, y, w, h, k);
+      if (k >= 1) {
+        R(ctx, "#5a6ab0", x + 2, y + h - 4, w - 4, 1);
+        STATS.forEach(([, v], i) => {
+          const bh = Math.round((v / 100) * 26 * ease((e - 0.4 - i * 0.14) / 0.5));
+          R(ctx, i === 6 ? "#ffc857" : "#6ee7d8", x + 3 + i * 6, y + h - 4 - bh, 4, bh);
+          if (bh > 1) R(ctx, "#ffffff", x + 3 + i * 6, y + h - 4 - bh, 4, 1);
+        });
+        once("sp", e > 2.2, () => { burst(x + 3 + 6 * 6 + 2, y + 8, 7, "#ffc857"); jingle([784, 988]); });
+      }
+    }
+
+    if (n === "inventory") {
+      ["laptop", "book", "block", "code"].forEach((nm, i) => {
+        const a = e * 2.2 + i * Math.PI / 2;
+        if (Math.sin(a) >= 0) drawIcon(ctx, nm, Math.round(px + Math.cos(a) * 24 - 4), Math.round(FOOT - 32 + Math.sin(a) * 7 - 4 + hy));
+      });
+      every("tw", e, 0.25, () => addPart({ x: px + (Math.random() * 44 - 22), y: FOOT - 40 + Math.random() * 22, life: 20, kind: "star", col: "#ffe08a" }));
+    }
+
+    if (n === "profile") {
+      once("h1", e > 0.05, () => hop());
+      once("h2", e > 0.75, () => hop(-2));
+      every("hearts", e < 2.8 ? e : 99, 0.4, () => addPart({ x: px + (Math.random() * 14 - 7), y: FOOT - 48, vx: (Math.random() - 0.5) * 0.3, vy: -0.45, life: 46, kind: "heart", col: Math.random() > 0.4 ? "#e86f8f" : "#ffc857" }));
+    }
+
+    if (n === "book1" || n === "book2") {
+      const v = n === "book2" ? 2 : 1, rise = ease(e / 0.6);
+      const bY = lerp(FOOT - 32, FOOT - 82, rise) + Math.sin(e * 4) * 1.2;
+      drawBookSprite(px - 6, Math.round(bY), v);
+      every("sp", e, 0.2, () => addPart({ x: px - 8 + Math.random() * 18, y: bY + Math.random() * 16, life: 22, kind: "star", col: "#ffe08a" }));
+      if (e > 1.4 && e < 2.6) {
+        const p = (e - 1.4) / 1.2, ex = lerp(px, 223, p) - 4, ey = lerp(FOOT - 44, 111, p) - Math.sin(p * Math.PI) * 24;
+        drawEnvelope(Math.round(ex), Math.round(ey));
+        addPart({ x: ex + 4, y: ey + 3, life: 14, kind: "star", col: "#f4e9c8" });
+      }
+      once("land", e >= 2.6, () => { mailbox.flag = true; mailbox.downAt = 0; burst(224, 108, 12, "#ffd36b"); jingle([660, 784, 988, 1318]); });
+    }
+
+    if (n === "mc") {
+      const f = Math.floor(e / 0.22) % 2, hx = px + 8, hyy = FOOT - 20 + hy;
+      drawPick(hx, hyy, 1, f);
+      every("sw", e, 0.22, (i) => { if (i % 2 === 1) { burst(hx + 8, hyy + 2, 3, "#ffe08a", "spark"); blip(220, 0.04, 0.025); } });
+      for (let i = 0; i < 6; i++) {
+        const sp = 0.9 + i * 0.6, p = (e - sp) / 0.7;
+        const lx = boatPos.bx + 10 + i * 9, ly = boatPos.by - 14;
+        if (p < 0) continue;
+        if (p < 1) { drawGrass(Math.round(lerp(px + 8, lx, p)), Math.round(lerp(FOOT - 30, ly, p) - Math.sin(p * Math.PI) * 16)); }
+        else drawGrass(lx, ly);
+        once("L" + i, p >= 1, () => { burst(lx + 3, ly + 4, 3, "#9be07a", "spark"); blip(330 + i * 40, 0.05, 0.025); });
+      }
+    }
+  }
+  function drawBoatBlocks() {} // i blocchi sono disegnati da fxFront
 
   /* ================= LOOP ================= */
-  let last = 0, tick = 0;
+  let last = 0;
+  function sceneToScreen(x, y) {
+    const vw = window.innerWidth, vh = window.innerHeight, sc = Math.max(vw / W, vh / H);
+    const posX = vw <= 1100 ? 0.66 : 0.62;
+    return [(vw - W * sc) * posX + x * sc, (vh - H * sc) * 0.5 + y * sc];
+  }
   function frame(ts) {
     requestAnimationFrame(frame);
     if (ts - last < 1000 / 30) return;
     last = ts; tick++;
-    const t = ts / 1000;
+    const t = ts / 1000; nowT = t;
 
-    // movimento
-    player.moving = false;
-    if (keys.left && !keys.right) { player.x -= 1.1; player.dir = -1; player.moving = true; }
-    if (keys.right && !keys.left) { player.x += 1.1; player.dir = 1; player.moving = true; }
+    // input
+    const kl = keys.left && !keys.right, kr = keys.right && !keys.left;
+    if (kl || kr) {
+      if (act) endAct();
+      player.target = null; player.x += kl ? -1.3 : 1.3; player.dir = kl ? -1 : 1; player.moving = true;
+    } else if (player.target == null) player.moving = false;
+    if (player.target != null) {
+      const dx = player.target - player.x;
+      if (Math.abs(dx) <= 1.6) { player.x = player.target; player.target = null; player.moving = false; if (act && act.state === "walk") arrive(t); }
+      else { player.x += Math.sign(dx) * 1.7; player.dir = Math.sign(dx); player.moving = true; }
+    }
     player.x = Math.max(MINX, Math.min(MAXX, player.x));
+    // salto
+    player.vy += 0.25; player.hy += player.vy; if (player.hy > 0) { player.hy = 0; player.vy = 0; }
+    // fine azione
+    if (act && act.state === "do" && t > act.endAt) endAct();
+    if (mailbox.downAt && t > mailbox.downAt) { mailbox.flag = false; mailbox.downAt = 0; }
 
     ctx.drawImage(bg, 0, 0);
-
-    // stelle
     stars.forEach((s) => {
       const a = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(t * 1.6 + s.p));
       ctx.fillStyle = `rgba(255,248,220,${a})`; ctx.fillRect(s.x, s.y, s.s, s.s);
     });
-    // nuvole
     clouds.forEach((c) => { c.x -= c.v; if (c.x < -c.c.width) c.x = W + 4; ctx.drawImage(c.c, Math.round(c.x), c.y); });
 
-    // faro: fascio
     const sw = Math.sin(t * 0.9);
     if (Math.abs(sw) > 0.15) {
       const dir = sw > 0 ? 1 : -1, al = Math.min(0.2, (Math.abs(sw) - 0.15) * 0.4);
@@ -325,7 +634,6 @@
     }
     glow(ctx, 149, 82, 9, "255,240,170", 0.8 + 0.2 * Math.sin(t * 6));
 
-    // riflessi sull'acqua
     const rs = rng(Math.floor(t * 3) + 7);
     for (let i = 0; i < 46; i++) {
       const y = HOR + 2 + Math.floor(rs() * 70), x = Math.floor(rs() * W), w = 2 + Math.floor(rs() * 6);
@@ -333,34 +641,36 @@
       ctx.fillRect(x, y, w, 1);
     }
     const lf = 0.85 + 0.15 * Math.sin(t * 9) * Math.sin(t * 5.3);
-    // riflessi lanterne
     for (let i = 0; i < 6; i++) { ctx.fillStyle = `rgba(255,208,110,${0.5 - i * 0.07})`; ctx.fillRect(150 + (i % 2) - 1 + Math.round(Math.sin(t * 2 + i)), 142 + i * 3, 6 - i % 3, 1); }
 
-    // barca
     const boat = drawBoat(ctx, t);
-    glow(ctx, boat.x, boat.y + 4, 16, "255,200,100", lf);
-
-    // luci
+    glow(ctx, boat.x, boat.y + 4, 14, "255,200,100", lf);
     glow(ctx, 152, 112, 24, "255,200,100", 0.95 * lf);
     glow(ctx, 249, 105, 22, "255,205,110", 0.75);
     glow(ctx, 291, 105, 18, "255,195,100", 0.6);
     glow(ctx, 269, 112, 14, "255,200,100", 0.5);
 
-    // personaggio
-    const walkStep = player.moving ? (Math.floor(tick / 5) % 2) + 1 : 0;
-    const bob = player.moving ? (Math.floor(tick / 5) % 2) : (Math.floor(t * 1.6) % 2);
-    const blink = (t % 4.2) > 4.05;
-    drawSprite(bob, walkStep, blink);
-    const px = Math.round(player.x), footY = 128;
-    ctx.fillStyle = "rgba(0,0,10,0.32)"; ctx.fillRect(px - 9, footY - 2, 18, 2); ctx.fillRect(px - 6, footY - 3, 12, 1);
-    ctx.save();
-    ctx.translate(px, footY - 44);
-    if (player.dir < 0) ctx.scale(-1, 1);
-    ctx.drawImage(sp, -15, 0);
-    ctx.restore();
-    glow(ctx, px, footY - 20, 22, "255,200,110", 0.18 * lf);
+    // bandierina della cassetta
+    if (mailbox.flag) { R(ctx, "#0a0a14", 229, 98, 3, 10); R(ctx, "#ffd36b", 230, 99, 1, 8); R(ctx, "#0a0a14", 227, 98, 6, 5); R(ctx, "#ffc857", 228, 99, 4, 3); }
 
-    // lucciole
+    fxBack(t);
+
+    // personaggio
+    const typing = act && act.state === "do" && (act.name === "web" || act.name === "git");
+    const mining = act && act.state === "do" && act.name === "mc";
+    const walkStep = player.moving ? (Math.floor(tick / 5) % 2) + 1 : 0;
+    const bob = player.moving ? (Math.floor(tick / 5) % 2) : typing ? (Math.floor(tick / 3) % 2) : mining ? (Math.floor((t - act.t0) / 0.22) % 2) : (Math.floor(t * 1.6) % 2);
+    drawSprite(bob, walkStep, (t % 4.2) > 4.05);
+    const px = Math.round(player.x), py = Math.round(FOOT + player.hy);
+    ctx.fillStyle = "rgba(0,0,10,0.32)"; ctx.fillRect(px - 9, FOOT - 2, 18, 2); ctx.fillRect(px - 6, FOOT - 3, 12, 1);
+    ctx.save(); ctx.translate(px, py - 44);
+    if (player.dir < 0) ctx.scale(-1, 1);
+    ctx.drawImage(sp, -15, 0); ctx.restore();
+    glow(ctx, px, FOOT - 20, 22, "255,200,110", 0.18 * lf);
+
+    fxFront(t);
+    drawParts();
+
     flies.forEach((f) => {
       f.x += Math.sin(t * f.s + f.p) * 0.25; f.y += Math.cos(t * f.s * 1.3 + f.p) * 0.18;
       if (f.x < 0) f.x = W; if (f.x > W) f.x = 0;
@@ -368,45 +678,43 @@
       ctx.fillStyle = `rgba(255,236,130,${a})`; ctx.fillRect(Math.round(f.x), Math.round(f.y), 1, 1);
       ctx.fillStyle = `rgba(255,236,130,${a * 0.25})`; ctx.fillRect(Math.round(f.x) - 1, Math.round(f.y), 3, 1); ctx.fillRect(Math.round(f.x), Math.round(f.y) - 1, 1, 3);
     });
+
+    // fumetto sopra la testa
+    if (bub.classList.contains("show")) {
+      const [sx_, sy_] = sceneToScreen(px, py - 50);
+      const half = Math.min(bub.offsetWidth / 2 + 8, window.innerWidth / 2);
+      bub.style.left = Math.max(half, Math.min(sx_, window.innerWidth - half)) + "px";
+      bub.style.top = Math.max(60, sy_) + "px";
+    }
   }
   requestAnimationFrame(frame);
 
-  /* ---- controlli del personaggio ---- */
+  /* ---- controlli tastiera / touch ---- */
   const setKey = (e, v) => {
     const k = e.key;
     if (k === "ArrowLeft" || k === "a" || k === "A") keys.left = v;
     else if (k === "ArrowRight" || k === "d" || k === "D") keys.right = v;
   };
-  window.addEventListener("keydown", (e) => { setKey(e, true); });
-  window.addEventListener("keyup", (e) => { setKey(e, false); });
+  window.addEventListener("keydown", (e) => setKey(e, true));
+  window.addEventListener("keyup", (e) => setKey(e, false));
   [["goLeft", "left"], ["goRight", "right"]].forEach(([id, k]) => {
     const el = document.getElementById(id);
-    ["pointerdown"].forEach((ev) => el.addEventListener(ev, (e) => { e.preventDefault(); keys[k] = true; }));
+    el.addEventListener("pointerdown", (e) => { e.preventDefault(); keys[k] = true; });
     ["pointerup", "pointerleave", "pointercancel"].forEach((ev) => el.addEventListener(ev, () => { keys[k] = false; }));
   });
 
   /* ================= INTERFACCIA ================= */
-  let audio;
-  function blip(f = 660, d = 0.05) {
-    try {
-      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-      const o = audio.createOscillator(), g = audio.createGain();
-      o.type = "square"; o.frequency.value = f; g.gain.value = 0.03;
-      o.connect(g); g.connect(audio.destination); o.start(); o.stop(audio.currentTime + d);
-    } catch (e) { /* audio non disponibile */ }
-  }
-
   const buttons = [...document.querySelectorAll("#menu button")];
+  const PANEL_ACT = { profile: "profile", skills: "stats", inventory: "inventory", facts: "facts" };
   let current = 0;
-
-  function show(i, sound) {
+  function show(i, sound, silent) {
     current = (i + buttons.length) % buttons.length;
     buttons.forEach((bt, n) => bt.classList.toggle("sel", n === current));
     const name = buttons[current].dataset.panel;
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "p-" + name));
-    if (name === "statistiche") fillStats();
-    if (name === "curiosita") nextFact(true);
+    if (name === "skills") fillStats();
     if (sound) blip(660 + current * 90);
+    if (!silent) perform(PANEL_ACT[name], { hold: name === "facts" });
   }
   buttons.forEach((bt, i) => {
     bt.addEventListener("click", () => show(i, true));
@@ -415,13 +723,19 @@
   window.addEventListener("keydown", (e) => {
     if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") { e.preventDefault(); show(current + 1, true); }
     else if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") { e.preventDefault(); show(current - 1, true); }
-    else if ((e.key === "Enter" || e.key === " ") && buttons[current].dataset.panel === "curiosita" && document.activeElement.tagName !== "BUTTON") { e.preventDefault(); nextFact(); }
+  });
+
+  // elementi che attivano le azioni (quest board, inventario, GitHub)
+  document.querySelectorAll("[data-act]").forEach((el) => {
+    const name = el.dataset.act;
+    el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") perform(name, { hold: true }); });
+    el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") release(name); });
+    el.addEventListener("focus", () => perform(name, { hold: true }));
+    el.addEventListener("blur", () => release(name));
+    el.addEventListener("click", () => { perform(name); blip(740, 0.05); });
   });
 
   /* ---- statistiche ---- */
-  const STATS = [
-    ["HTML / CSS", 75], ["JavaScript", 65], ["PHP", 55], ["SQL", 50], ["Python", 35], ["Git / GitHub", 60], ["Resistenza al sonno", 90]
-  ];
   const statsBox = document.getElementById("stats");
   STATS.forEach(([n, v]) => {
     const row = document.createElement("div");
@@ -439,42 +753,26 @@
     });
   }
 
-  /* ---- icone dello zaino ---- */
-  const ICONS = {
-    palette: { r: "#c0392b", R: "#7a1f17", w: "#f4e9c8", L: "#8a93a6", l: "#cfd6e4", c: "#16264d", g: "#4ade80", u: "#38bdf8", G: "#5fbf3f", H: "#3f9a2a", D: "#8a5a30", d: "#6b4423", y: "#ffc857", t: "#6ee7d8" },
-    book: [".RRRRRR.", "RrrrrrRw", "RrwwrrRw", "RrrrrrRw", "RrwwwrRw", "RrrrrrRw", "RRRRRRRw", ".wwwwww."],
-    laptop: ["........", ".LLLLLL.", ".LccccL.", ".LgucuL.", ".LccccL.", ".LLLLLL.", "llllllll", ".lLLLLl."],
-    block: ["GGGGGGGG", "GHGGGHGG", "DDDDDDDD", "DdDDDdDD", "DDDdDDDD", "DdDDDDdD", "DDDDdDDD", "dDDDDDDd"],
-    code: ["........", ".t....t.", "t.t..t.t", "t..y.t.t", "t.t.yt.t", ".t..y.t.", "........", "........"]
-  };
-  document.querySelectorAll(".icon").forEach((cnv) => {
-    const map = ICONS[cnv.dataset.icon], c = cnv.getContext("2d");
-    map.forEach((row, y) => [...row].forEach((ch, x) => { if (ICONS.palette[ch]) { c.fillStyle = ICONS.palette[ch]; c.fillRect(x, y, 1, 1); } }));
+  /* ---- fun facts sbloccabili ---- */
+  const unlocked = new Set();
+  const factList = document.getElementById("factList"), found = document.getElementById("found");
+  function renderFacts() {
+    factList.innerHTML = FACTS.map((f, i) => unlocked.has(i)
+      ? `<li class="open"><span>★</span>${f}</li>` : `<li class="locked"><span>🔒</span>??? keep talking</li>`).join("");
+    found.textContent = `${unlocked.size}/${FACTS.length}`;
+  }
+  renderFacts();
+  document.getElementById("btn").addEventListener("click", () => {
+    if (!act || act.name !== "facts") perform("facts", { hold: true });
+    const locked = FACTS.map((_, i) => i).filter((i) => !unlocked.has(i));
+    const pool = locked.length ? locked : FACTS.map((_, i) => i);
+    const i = pool[Math.floor(Math.random() * pool.length)];
+    if (act && act.state === "walk") { act.state = "do"; act.t0 = nowT; act.endAt = Infinity; }
+    say(FACTS[i], 26);
+    if (!unlocked.has(i)) { unlocked.add(i); renderFacts(); burst(player.x, FOOT - 50, 10, "#ffe08a"); jingle([660, 880]); }
+    hop(-2);
   });
 
-  /* ---- curiosità con effetto macchina da scrivere ---- */
-  const FACTS = [
-    "Ho pubblicato dei libri su Amazon.",
-    "Mi piace creare progetti web e sperimentare con nuove tecnologie.",
-    "Ho un server Minecraft e sviluppo progetti legati al gaming."
-  ];
-  const typed = document.getElementById("typed"), more = document.getElementById("more");
-  let fi = -1, typeTimer = null;
-  function type(text) {
-    clearInterval(typeTimer); typed.textContent = ""; more.style.visibility = "hidden";
-    let i = 0;
-    typeTimer = setInterval(() => {
-      typed.textContent = text.slice(0, ++i);
-      if (i % 3 === 0) blip(520, 0.02);
-      if (i >= text.length) { clearInterval(typeTimer); more.style.visibility = "visible"; }
-    }, 28);
-  }
-  function nextFact(first) {
-    if (first) { type("Ciao! Sono Filippo. Premi il pulsante per scoprire qualcosa su di me."); fi = -1; return; }
-    let n; do { n = Math.floor(Math.random() * FACTS.length); } while (n === fi && FACTS.length > 1);
-    fi = n; type(FACTS[n]);
-  }
-  document.getElementById("btn").addEventListener("click", () => nextFact());
-
-  show(0, false);
+  show(0, false, true);
+  setTimeout(() => perform("profile"), 700);
 })();

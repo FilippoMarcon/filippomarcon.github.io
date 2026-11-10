@@ -1,80 +1,110 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Filippo Marcon · Press Start</title>
-  <meta name="description" content="Presentazione di Filippo Marcon in stile videogioco 2D.">
+  <meta name="description" content="Filippo Marcon's interactive 2D pixel-art portfolio.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <canvas id="scene" aria-label="Scena pixel art: un molo di notte con il personaggio di Filippo che tiene un portatile"></canvas>
+  <canvas id="scene" aria-label="Pixel-art scene: a night-time pier where Filippo reacts to everything you open"></canvas>
   <div class="vignette"></div>
+  <div id="bubble" role="status" aria-live="polite"></div>
 
   <div class="ui">
     <header class="hud">
       <span>LV.19 &nbsp;FILIPPO</span>
-      <span class="hint-top">1UP</span>
+      <button type="button" id="snd" class="snd" aria-pressed="true">♪ SOUND ON</button>
     </header>
 
     <section class="left">
       <h1 class="logo"><span class="l1">Filippo</span><span class="l2">Marcon</span></h1>
-      <p class="tagline">Studente di informatica · creatore di cose</p>
+      <p class="tagline">Computer science student · maker of things</p>
 
-      <nav id="menu" aria-label="Menu principale">
-        <button type="button" data-panel="profilo" class="sel">Profilo</button>
-        <button type="button" data-panel="statistiche">Statistiche</button>
-        <button type="button" data-panel="zaino">Inventario</button>
-        <button type="button" data-panel="curiosita">Curiosità</button>
+      <nav id="menu" aria-label="Main menu">
+        <button type="button" data-panel="profile" class="sel">Profile</button>
+        <button type="button" data-panel="skills">Skills</button>
+        <button type="button" data-panel="inventory">Inventory</button>
+        <button type="button" data-panel="facts">Fun facts</button>
       </nav>
 
       <div class="window" id="window">
-        <!-- PROFILO -->
-        <article class="panel active" id="p-profilo">
-          <h2>Profilo</h2>
+        <!-- PROFILE -->
+        <article class="panel active" id="p-profile">
+          <h2>Profile</h2>
           <dl>
-            <dt>Giocatore</dt><dd>Filippo Marcon · 19 anni · Caorle</dd>
-            <dt>Classe</dt><dd>Studente di informatica</dd>
-            <dt>Abilità</dt>
+            <dt>Player</dt><dd>Filippo Marcon · 19 · Caorle, Italy</dd>
+            <dt>Class</dt><dd>Computer science student</dd>
+            <dt>Interests</dt>
+            <dd><ul class="chips"><li>Programming</li><li>Computer science</li><li>Technology</li></ul></dd>
+            <dt>Abilities</dt>
             <dd><ul class="chips"><li>HTML / CSS</li><li>JavaScript</li><li>Git / GitHub</li></ul></dd>
-            <dt>Bug personale</dt>
-            <dd class="bug">«Inizio un progetto per curiosità e finisco per passarci tutta la notte.»</dd>
+            <dt>Personal bug</dt>
+            <dd class="bug">“I start a project out of curiosity and end up spending the whole night on it.”</dd>
           </dl>
         </article>
 
-        <!-- STATISTICHE -->
-        <article class="panel" id="p-statistiche">
-          <h2>Statistiche</h2>
+        <!-- SKILLS -->
+        <article class="panel" id="p-skills">
+          <h2>Skills</h2>
           <div id="stats" class="stats"></div>
-          <h3>Talenti</h3>
-          <ul class="chips gold"><li>Nottambulo</li><li>Guerriero della tastiera</li><li>Autore di libri</li></ul>
-          <p class="note">Valori indicativi.</p>
+          <h3>Perks</h3>
+          <ul class="chips gold"><li>Night Owl</li><li>Keyboard Warrior</li><li>Published Author</li></ul>
+          <p class="note">Rough estimates.</p>
         </article>
 
-        <!-- ZAINO -->
-        <article class="panel" id="p-zaino">
-          <h2>Inventario</h2>
-          <ul class="items" id="items">
-            <li><canvas class="icon" data-icon="laptop" width="8" height="8"></canvas><div><b>Portatile</b><small>Equipaggiato · da qui nascono i miei progetti</small></div></li>
-            <li><canvas class="icon" data-icon="book" width="8" height="8"></canvas><div><b>Libri su Amazon</b><small>«3:17» · «Diario di un Content Creator»</small></div></li>
-            <li><canvas class="icon" data-icon="block" width="8" height="8"></canvas><div><b>Server Minecraft</b><small>Progetti legati al gaming</small></div></li>
-            <li><a href="https://github.com/FilippoMarcon" target="_blank" rel="noopener"><canvas class="icon" data-icon="code" width="8" height="8"></canvas><div><b>GitHub</b><small>github.com/FilippoMarcon</small></div></a></li>
+        <!-- INVENTORY -->
+        <article class="panel" id="p-inventory">
+          <h2>Inventory</h2>
+          <p class="note top">Hover an item and watch what happens.</p>
+          <ul class="items">
+            <li data-act="web" tabindex="0"><canvas class="icon" data-icon="laptop" width="8" height="8"></canvas><div><b>Laptop</b><small>Equipped · where my projects are born</small></div></li>
+            <li data-act="book1" tabindex="0"><canvas class="icon" data-icon="book" width="8" height="8"></canvas><div><b>Books on Amazon</b><small>“3:17” · “Diario di un Content Creator”</small></div></li>
+            <li data-act="mc" tabindex="0"><canvas class="icon" data-icon="block" width="8" height="8"></canvas><div><b>Minecraft server</b><small>Gaming projects</small></div></li>
+            <li class="link"><a href="https://github.com/FilippoMarcon" target="_blank" rel="noopener" data-act="git"><canvas class="icon" data-icon="code" width="8" height="8"></canvas><div><b>GitHub</b><small>github.com/FilippoMarcon ↗</small></div></a></li>
           </ul>
         </article>
 
-        <!-- CURIOSITA -->
-        <article class="panel" id="p-curiosita">
-          <h2>Curiosità</h2>
-          <div class="dialog">
-            <span class="name">FILIPPO</span>
-            <p id="typed" aria-live="polite"></p>
-            <span class="more" id="more">▼</span>
-          </div>
-          <button type="button" id="btn" class="action">▶ Un'altra curiosità</button>
+        <!-- FUN FACTS -->
+        <article class="panel" id="p-facts">
+          <h2>Fun facts</h2>
+          <p class="note top">Talk to Filippo to unlock facts about him. <b id="found">0/3</b> found.</p>
+          <ul class="facts" id="factList"></ul>
+          <button type="button" id="btn" class="action">▶ Talk to Filippo</button>
         </article>
+      </div>
+    </section>
+
+    <aside class="status" aria-label="Player status">
+      <div class="st-head"><span>PLAYER 1</span><span class="online">● ONLINE</span></div>
+      <p class="st-name">Filippo Marcon</p>
+      <p class="st-sub">Computer science student<br>Caorle, Italy</p>
+      <a class="gh" href="https://github.com/FilippoMarcon" target="_blank" rel="noopener" data-act="git">GitHub ↗</a>
+    </aside>
+
+    <section class="board" aria-label="Quest board">
+      <h2 class="board-title">Quest board <span>· hover a quest</span></h2>
+      <div class="cards">
+        <button type="button" class="card" data-act="web">
+          <canvas class="icon" data-icon="laptop" width="8" height="8"></canvas>
+          <span class="t">Web projects</span><span class="s">Sites &amp; experiments with new tech</span>
+        </button>
+        <button type="button" class="card" data-act="book1">
+          <canvas class="icon" data-icon="book" width="8" height="8"></canvas>
+          <span class="t">3:17</span><span class="s">Book · mind, memory &amp; free will</span>
+        </button>
+        <button type="button" class="card" data-act="book2">
+          <canvas class="icon" data-icon="book2" width="8" height="8"></canvas>
+          <span class="t">Diary of a Content Creator</span><span class="s">Book · young-adult novel</span>
+        </button>
+        <button type="button" class="card" data-act="mc">
+          <canvas class="icon" data-icon="block" width="8" height="8"></canvas>
+          <span class="t">Minecraft server</span><span class="s">Gaming projects</span>
+        </button>
       </div>
     </section>
 
@@ -82,7 +112,7 @@
       <button type="button" id="goLeft">◀</button>
       <button type="button" id="goRight">▶</button>
     </div>
-    <p class="hint">↑ ↓ scegli &nbsp;·&nbsp; ← → muovi il personaggio</p>
+    <p class="hint">↑ ↓ menu &nbsp;·&nbsp; ← → move Filippo &nbsp;·&nbsp; hover the quests</p>
   </div>
 
   <script src="script.js"></script>

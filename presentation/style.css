@@ -556,3 +556,38 @@ html.reduce *, html.reduce *::before, html.reduce *::after { animation: none !im
   .hud { padding: 6px 12px; }
   .snd { min-height: 36px; }
 }
+
+/* ---------- v4: guided route (start left -> finish right) ---------- */
+#guide {
+  position: fixed; z-index: 7; left: 540px; right: 340px; top: 52px; margin: 0 auto; width: max-content; max-width: calc(100vw - 900px);
+  display: flex; align-items: center; gap: 12px; padding: 8px 14px;
+  background: rgba(10, 16, 48, .92); border: 3px solid var(--gold); color: var(--cream);
+  box-shadow: 4px 4px 0 rgba(0,0,10,.5); pointer-events: none;
+}
+#guide .g-step { flex: none; font-family: "Press Start 2P", monospace; font-size: 9px; color: var(--teal); text-shadow: 2px 2px 0 #05081a; }
+#guide .g-text { font-family: "Pixelify Sans", sans-serif; font-weight: 700; font-size: 19px; line-height: 1.1; color: #fff6d8; }
+#guide.done { border-color: var(--teal); }
+#guide.shake { animation: gshake .4s steps(4); border-color: #e5484d; }
+@keyframes gshake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+#toast { top: 112px; }
+#banner { top: 168px; }
+
+#menu button.ok::after { content: " ✔"; color: var(--teal); }
+#menu button.locked { color: #8d89b5; }
+#menu button.locked::after { content: " 🔒"; font-size: .8em; }
+#menu button.next { color: var(--gold); }
+#menu button.next::before { opacity: 1; animation: nudge .7s steps(2) infinite; }
+#menu button.next::after { content: " ◀ next"; font-family: "Press Start 2P", monospace; font-size: 8px; color: var(--teal); letter-spacing: 0; vertical-align: middle; }
+
+.intro-how { max-width: 440px; margin: 0 auto 20px; font-size: 18px; line-height: 1.25; color: #d6d0f0; }
+.intro-how b { font-family: "Press Start 2P", monospace; font-weight: 400; font-size: 9px; color: var(--teal); }
+.intro-how em { font-style: normal; color: var(--gold); font-weight: 700; }
+.intro-how span { display: inline-block; margin-top: 6px; font-family: "Press Start 2P", monospace; font-size: 8px; color: #b3add6; }
+
+@media (max-width: 1100px) {
+  #guide { left: 12px; right: 12px; top: auto; bottom: calc(27vh + 90px); width: auto; max-width: none; margin: 0; }
+  #guide .g-text { font-size: 17px; }
+  #toast { top: 96px; }
+  #banner { top: 150px; }
+}
+@media (prefers-reduced-motion: reduce) { #guide.shake { animation: none; } }

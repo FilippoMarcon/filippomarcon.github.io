@@ -328,6 +328,10 @@
   const GLYPHS = {
     "?": ["111", "001", "011", "000", "010"], "!": ["010", "010", "010", "000", "010"],
     A: ["010", "101", "111", "101", "101"], B: ["110", "101", "110", "101", "110"], C: ["011", "100", "100", "100", "011"],
+    S: ["011", "100", "010", "001", "110"], T: ["111", "010", "010", "010", "010"], R: ["110", "101", "110", "101", "101"],
+    F: ["111", "100", "110", "100", "100"], I: ["111", "010", "010", "010", "111"], N: ["101", "111", "111", "101", "101"],
+    H: ["101", "101", "111", "101", "101"], 2: ["110", "001", "010", "100", "111"], 3: ["110", "001", "010", "001", "110"],
+    4: ["101", "101", "111", "001", "001"],
     0: ["111", "101", "101", "101", "111"], 1: ["010", "110", "010", "010", "111"], "{": ["011", "010", "110", "010", "011"], "}": ["110", "010", "011", "010", "110"]
   };
 
@@ -347,7 +351,7 @@
     intro: [
       "A quiet night in Caorle, Italy…",
       "A student. A maker. A night owl.",
-      "Welcome to my world. Let's play!"
+      "Start on the left. Follow the arrow to the right."
     ],
     chapters: [
       { title: "The Beginning", text: [ // EDIT ME: tell the real story (when and how it started)
@@ -384,8 +388,9 @@
         ],
         bye: "Come back any time. Hoo-hoo!" },
       captain: { name: "Captain Pixel", sprite: "captain",
-        start: "Ahoy! I watch the horizon every night. Ask me about Filippo's future.",
+        start: "Ahoy, traveller! Welcome to Filippo's pier. Your journey starts here and ends at the house on the right. Ask me anything!",
         options: [
+          { q: "How does this game work?", a: "Follow the golden arrow and the guide bar at the top. Visit every station, open each page of the menu, and walk to the house at the right end of the pier to finish." },
           { q: "What is his big goal?", a: "He wants to become a Full Stack Developer: someone who builds both the front end and the back end of a website." },
           { q: "How will he get there?", a: "One project at a time. He studies, he codes, he writes, and he stays curious." },
           { q: "What is his next step?", a: "Keep learning, build new projects and practise his English. That's why he made this game for you!" }
@@ -499,8 +504,8 @@
   });
 
   /* ================= STATO DI GIOCO ================= */
-  const FOOT = 128, MINX = 128, MAXX = 296;
-  const player = { x: 178, dir: 1, moving: false, hy: 0, vy: 0, target: null };
+  const FOOT = 128, MINX = 136, MAXX = 296;
+  const player = { x: 140, dir: 1, moving: false, hy: 0, vy: 0, target: null };
   const keys = { left: false, right: false };
   const SPOTS = { web: 158, mc: 186, book1: 208, book2: 208, git: 142, about: 269 };
   const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, about: 6, quest: 5, facts: Infinity, quiz: Infinity, vocab: Infinity };
@@ -528,12 +533,29 @@
     { x: 140, y: 111 }, { x: 160, y: 111 }, { x: 198, y: 74 }, { x: 236, y: 111 }, { x: 252, y: 74 }, { x: 290, y: 100 }
   ].map((s) => Object.assign(s, { got: false, p: Math.random() * 6 }));
   const HOTSPOTS = [
-    { id: "post", x: 152, mx: 152, my: 96, spot: 158, bx: [143, 104, 161, 124], act: () => "web" },
-    { id: "boat", x: 186, mx: 178, my: 124, spot: 186, bx: [160, 134, 228, 148], act: () => "mc" },
-    { id: "mail", x: 208, mx: 224, my: 97, spot: 208, bx: [214, 105, 232, 127], act: () => ((mailToggle = !mailToggle) ? "book1" : "book2") },
-    { id: "door", x: 269, mx: 269, my: 93, spot: 269, bx: [258, 100, 280, 127], act: () => "about" }
+    { id: "post", n: 1, x: 152, mx: 152, my: 96, spot: 158, bx: [143, 104, 161, 124], act: () => "web" },
+    { id: "boat", n: 2, x: 186, mx: 178, my: 124, spot: 186, bx: [160, 134, 228, 148], act: () => "mc" },
+    { id: "mail", n: 3, x: 208, mx: 224, my: 97, spot: 208, bx: [214, 105, 232, 127], act: () => ((mailToggle = !mailToggle) ? "book1" : "book2") },
+    { id: "door", n: 4, x: 269, mx: 269, my: 93, spot: 269, bx: [258, 100, 280, 127], act: () => "about" }
   ];
   const PLACE_OF_ACT = { web: "post", mc: "boat", book1: "mail", book2: "mail", about: "door" };
+
+  /* ---- guided route: start on the left, finish at the house on the right ---- */
+  const ROUTE = [
+    { id: "profile", menu: "profile", where: "Menu", text: "Open “Profile” in the menu", done: () => game.done.has("profile") },
+    { id: "skills", menu: "skills", where: "Menu", text: "Open “Skills” in the menu", done: () => game.done.has("skills") },
+    { id: "web", x: 158, hot: "post", where: "Station 1", text: "Station 1 · Web projects", done: () => game.quests.has("web") },
+    { id: "mc", x: 186, hot: "boat", where: "Station 2", text: "Station 2 · Minecraft server", done: () => game.quests.has("mc") },
+    { id: "books", x: 208, hot: "mail", where: "Station 3", text: "Station 3 · My books (press E twice)", done: () => game.quests.has("book1") && game.quests.has("book2") },
+    { id: "inventory", menu: "inventory", where: "Menu", text: "Open “Inventory” in the menu", done: () => game.done.has("inventory") },
+    { id: "facts", menu: "facts", where: "Menu", text: "Open “Fun facts” and unlock all 3", done: () => game.done.has("facts") },
+    { id: "quiz", menu: "quiz", where: "Menu", text: "Finish the quiz in the menu", done: () => game.done.has("quiz") },
+    { id: "vocab", menu: "vocab", where: "Menu", text: "Open all the “Tech words”", done: () => game.done.has("vocab") },
+    { id: "home", x: 269, hot: "door", where: "Finish", text: "Finish · Enter the house at the right end", done: () => game.finished }
+  ];
+  const currentStep = () => ROUTE.find((r) => !r.done()) || null;
+  const routeReady = () => ROUTE.slice(0, -1).every((r) => r.done());
+  let gTarget = null, gDir = 0, gKey = "", lockAt = -9;
 
   /* ---- fumetto / toast / prompt ---- */
   const bub = document.getElementById("bubble"), toastEl = document.getElementById("toast"), promptEl = document.getElementById("prompt");
@@ -666,9 +688,9 @@
   function renderQuest() {
     const ml = $("qlog"); if (!ml) return;
     const row = (a) => `<li class="${game.done.has(a.id) ? "done" : ""}"><span>${game.done.has(a.id) ? "✔" : "□"}</span>${a.secret && !game.done.has(a.id) ? "??? (secret)" : a.t}<em>+${a.xp} XP</em></li>`;
-    ml.innerHTML = MAIN.map(row).join("");
+    ml.innerHTML = ROUTE.map((r) => `<li class="${r.done() ? "done" : ""}"><span>${r.done() ? "✔" : "□"}</span>${r.text}<em>${r.where}</em></li>`).join("");
     $("bonuslog").innerHTML = BONUS.map(row).join("");
-    $("qfound").textContent = `${MAIN.filter((a) => game.done.has(a.id)).length}/${MAIN.length}`;
+    $("qfound").textContent = `${ROUTE.filter((r) => r.done()).length}/${ROUTE.length}`;
     $("bfound").textContent = `${BONUS.filter((a) => game.done.has(a.id)).length}/${BONUS.length}`;
     renderBadges();
   }
@@ -780,10 +802,14 @@
     if (f === 0) { line("#6b4423", hx, hy, hx + 7 * dir, hy - 9); R(ctx, "#0a0a14", hx + 7 * dir - 3, hy - 11, 7, 4); R(ctx, "#cfd6e4", hx + 7 * dir - 2, hy - 10, 5, 2); }
     else { line("#6b4423", hx, hy, hx + 8 * dir, hy + 2); R(ctx, "#0a0a14", hx + 8 * dir - 2, hy - 3, 4, 8); R(ctx, "#cfd6e4", hx + 8 * dir - 1, hy - 2, 2, 6); }
   }
-  function drawMarker(x, y, visited, t) {
+  function glyphAt(ch, x, y, col) {
+    (GLYPHS[ch] || []).forEach((row, yy) => [...row].forEach((c, xx) => { if (c === "1") R(ctx, col, x + xx, y + yy, 1, 1); }));
+  }
+  function drawMarker(x, y, visited, t, n) {
     const yy = y + (reduce ? 0 : Math.round(Math.sin(t * 4 + x) * 1.5));
     if (visited) { R(ctx, "#0a0a14", x - 3, yy - 3, 7, 7); R(ctx, "#2fa85c", x - 2, yy - 2, 5, 5); R(ctx, "#fff", x - 1, yy, 1, 1); R(ctx, "#fff", x, yy + 1, 1, 1); R(ctx, "#fff", x + 1, yy - 1, 1, 1); return; }
     R(ctx, "#0a0a14", x - 4, yy - 6, 9, 12); R(ctx, "#ffd34d", x - 3, yy - 5, 7, 10); R(ctx, "#fff6b0", x - 3, yy - 5, 7, 1);
+    if (n) { glyphAt(String(n), x - 1, yy - 3, "#0a0a14"); R(ctx, "#0a0a14", x - 2, yy + 3, 5, 1); return; }
     R(ctx, "#0a0a14", x - 1, yy - 4, 3, 5); R(ctx, "#0a0a14", x - 1, yy + 2, 3, 2);
     R(ctx, "#0a0a14", x - 1, yy + 6, 3, 1);
   }
@@ -1025,7 +1051,7 @@
     const bob = wob(t + 2, 2.2, 0.6) > 0 ? 1 : 0;
     R(ctx, "#0a0a14", 246, 118, 13, 10); R(ctx, "#8a5a30", 247, 119, 11, 8); R(ctx, "#6b4423", 247, 122, 11, 1); R(ctx, "#a8702f", 247, 119, 11, 1);
     ctx.drawImage(OWL, 246, 105 + bob);
-    ctx.drawImage(CAPTAIN, 127, 106 + (wob(t, 1.6, 0.6) > 0 ? 1 : 0));
+    ctx.drawImage(CAPTAIN, 120, 106 + (wob(t, 1.6, 0.6) > 0 ? 1 : 0));
   }
   function drawShoot(t) {
     if (!shoot) return;
@@ -1109,7 +1135,7 @@
   function collectItem(it) {
     game.items.add(it.id); burst(it.x, 122, 12, "#ffd34d"); jingle([784, 988, 1318]);
     award(it.award); renderInventory(); checkBadges();
-    setTimeout(() => openItemCard(it.id), 450);
+    toast(`Found: ${CONTENT.items[it.id].name} · read it in the Inventory`);
   }
 
   /* chest */
@@ -1193,12 +1219,65 @@
 
   /* interactables added to the pier (marker rules: show / done) */
   HOTSPOTS.push(
-    { id: "captain", mx: 134, my: 94, spot: 136, bx: [126, 104, 144, 128], run: () => openNPC("captain"), done: () => game.done.has("captain") },
+    { id: "captain", mx: 128, my: 94, spot: 136, bx: [118, 104, 136, 128], run: () => openNPC("captain"), done: () => game.done.has("captain") },
     { id: "tablet", mx: 172, my: 100, spot: 172, bx: [165, 112, 179, 128], run: openPuzzle, hide: true },
     { id: "owl", mx: 252, my: 96, spot: 252, bx: [246, 102, 258, 128], run: () => openNPC("owl"), done: () => game.done.has("owl") },
     { id: "terminal", mx: 286, my: 100, spot: 286, bx: [278, 111, 294, 128], run: openTerminal, done: () => game.repair >= 3 },
     { id: "chest", mx: 302, my: 106, spot: 296, bx: [296, 112, 309, 128], run: interactChest, done: () => game.chestOpen, show: () => game.stars >= 3 || game.chestOpen }
   );
+
+  /* ---- guide bar + on-scene arrows ---- */
+  const guideEl = $("guide"), guideStep = $("guideStep"), guideText = $("guideText");
+  function updateGuide() {
+    const s = currentStep(), done = ROUTE.filter((r) => r.done()).length;
+    let step, text; gDir = 0; gTarget = s && s.hot ? s.hot : null;
+    if (!s) { step = "COMPLETE"; text = "You reached the end. Thanks for playing!"; }
+    else {
+      step = `STEP ${done + 1}/${ROUTE.length}`;
+      if (s.x != null) {
+        const nh = nearHotspot();
+        if (nh && nh.id === s.hot) text = `Press E here: ${s.text}`;
+        else if (s.x - player.x >= 0) { text = `▶ Walk right: ${s.text}`; gDir = 1; }
+        else { text = `◀ Walk back: ${s.text}`; gDir = -1; }
+      } else text = s.text;
+    }
+    const key = step + "|" + text + "|" + done;
+    if (key === gKey) return;
+    gKey = key; guideStep.textContent = step; guideText.textContent = text;
+    guideEl.classList.toggle("done", !s);
+    buttons.forEach((b) => {
+      const r = ROUTE.find((x) => x.menu === b.dataset.panel);
+      b.classList.toggle("next", !!s && !!r && r.id === s.id);
+      b.classList.toggle("ok", !!r && r.done());
+      b.classList.toggle("locked", b.dataset.panel === "about" && !routeReady());
+    });
+  }
+  function lockedMessage() {
+    if (nowT - lockAt < 2.5) return; lockAt = nowT;
+    const s = currentStep();
+    say("The door is locked. Finish the other steps first!"); blip(180, 0.15, 0.04);
+    toast("Locked · next: " + (s ? s.text : ""));
+    guideEl.classList.remove("shake"); void guideEl.offsetWidth; guideEl.classList.add("shake");
+  }
+  function pixShape(x, y, dir, col, ox, oy) {
+    for (let i = 0; i < 5; i++) {
+      const w = 9 - 2 * i;
+      if (dir === 0) R(ctx, col, x - 4 + i + ox, y + i + oy, w, 1);
+      else R(ctx, col, dir > 0 ? x + i + ox : x - i - 1 + ox, y - 4 + i + oy, 1, w);
+    }
+  }
+  function pixArrow(x, y, dir) {
+    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([a, b]) => pixShape(x, y, dir, "#0a0a14", a, b));
+    pixShape(x, y, dir, "#ffd34d", 0, 0);
+  }
+  function drawFinishSign(t) {
+    const ready = routeReady(), on = ready && (reduce || Math.floor(t * 3) % 2 === 0);
+    R(ctx, "#0a0a14", 258, 65, 31, 9); R(ctx, "#51341f", 259, 66, 29, 7);
+    const col = game.finished ? "#6ee7d8" : ready ? (on ? "#ffd34d" : "#fff6b0") : "#8d89b5";
+    [...("FINISH")].forEach((ch, i) => glyphAt(ch, 261 + i * 4, 67, col));
+    R(ctx, "#0a0a14", 270, 74, 1, 1); R(ctx, "#51341f", 272, 74, 2, 3); R(ctx, "#51341f", 280, 74, 2, 3);
+    if (!ready) { R(ctx, "#0a0a14", 266, 106, 7, 6); R(ctx, "#8d89b5", 267, 107, 5, 4); R(ctx, "#0a0a14", 268, 103, 3, 3); R(ctx, "#5a5780", 269, 104, 1, 1); R(ctx, "#0a0a14", 269, 109, 1, 1); }
+  }
 
   /* ================= LOOP ================= */
   let last = 0;
@@ -1288,7 +1367,7 @@
     glow(ctx, 269, 112, 14, "255,200,100", 0.5);
     if (mailbox.flag) { R(ctx, "#0a0a14", 229, 98, 3, 10); R(ctx, "#ffd36b", 230, 99, 1, 8); R(ctx, "#0a0a14", 227, 98, 6, 5); R(ctx, "#ffc857", 228, 99, 4, 3); }
     drawDoorOpen(t);
-    drawWorld(t); drawDawn();
+    drawWorld(t); drawFinishSign(t); drawDawn();
 
     // stelle
     STARS.forEach((s) => {
@@ -1299,7 +1378,7 @@
     });
 
     // segnaposto dei luoghi
-    HOTSPOTS.forEach((h) => { if (h.hide || (h.show && !h.show())) return; drawMarker(h.mx, h.my, game.places.has(h.id) || !!(h.done && h.done()), t); });
+    HOTSPOTS.forEach((h) => { if (h.hide || (h.show && !h.show())) return; drawMarker(h.mx, h.my, game.places.has(h.id) || !!(h.done && h.done()), t, h.n); });
 
     fxBack(t);
 
@@ -1316,6 +1395,12 @@
     ctx.drawImage(sp, -15, 0); ctx.restore();
     glow(ctx, px, FOOT - 20, 22, "255,200,110", 0.18 * lf);
 
+    if (!blocked()) {
+      const ob = reduce ? 0 : Math.round(Math.sin(t * 5) * 2);
+      const gh = gTarget && HOTSPOTS.find((h) => h.id === gTarget);
+      if (gh && !(act && act.state === "do" && PLACE_OF_ACT[act.name] === gTarget)) pixArrow(gh.mx, gh.my - 14 + ob, 0);
+      if (gDir && !(act && act.name in SPOTS)) pixArrow(px + gDir * (22 + ob), FOOT - 24, gDir);
+    }
     fxFront(t);
     drawRockets(t);
     drawParts();
@@ -1327,6 +1412,8 @@
       ctx.fillStyle = `rgba(255,236,130,${a})`; ctx.fillRect(Math.round(f.x), Math.round(f.y), 1, 1);
       ctx.fillStyle = `rgba(255,236,130,${a * 0.25})`; ctx.fillRect(Math.round(f.x) - 1, Math.round(f.y), 3, 1); ctx.fillRect(Math.round(f.x), Math.round(f.y) - 1, 1, 3);
     });
+
+    updateGuide();
 
     // fumetto e suggerimento di interazione
     if (bub.classList.contains("show")) {
@@ -1348,6 +1435,7 @@
   let pend = null;
   const blocked = () => modalOpen || introOpen || endOpen;
   function activate(h) {
+    if (h.id === "door" && !routeReady()) { lockedMessage(); return; }
     if (h.run) { endAct(); h.run(); return; }
     if (h.id === "door") showPanel("about"); // also updates the menu
     perform(h.act(), { restart: true });
@@ -1427,7 +1515,9 @@
     if (i >= 0) show(i, false, false);
   }
   function show(i, sound, silent) {
-    current = (i + buttons.length) % buttons.length;
+    const want = (i + buttons.length) % buttons.length;
+    if (buttons[want].dataset.panel === "about" && !routeReady()) { if (!silent) lockedMessage(); return; }
+    current = want;
     buttons.forEach((bt, n) => bt.classList.toggle("sel", n === current));
     const name = buttons[current].dataset.panel;
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "p-" + name));
@@ -1612,7 +1702,7 @@
     const f = document.querySelector('#menu button.sel'); if (f) f.focus({ preventScroll: true });
     setTimeout(() => { if (!act) perform("profile"); }, 300);
     setTimeout(() => award("profile"), 1500);
-    setTimeout(() => toast(touchUI ? "Use the buttons to walk, jump and interact" : "Arrows walk · SPACE jumps · E interacts · click the pier"), 1800);
+    setTimeout(() => toast(touchUI ? "Use ◀ ▶ to walk, ▲ to jump, A to interact" : "← → walk · SPACE jump · E interact · or click the pier"), 1800);
   }
   $("introStart").addEventListener("click", endIntro);
   $("introSkip").addEventListener("click", endIntro);

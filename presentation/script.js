@@ -500,7 +500,7 @@
   const FOOT = 128, MINX = 136, MAXX = 296;
   const player = { x: 140, dir: 1, moving: false, hy: 0, vy: 0, target: null };
   const keys = { left: false, right: false };
-  const SPOTS = { web: 158, mc: 186, book1: 208, book2: 208, git: 142, about: 269 };
+  const SPOTS = { web: 158, mc: PRESENT ? 240 : 186, book1: 208, book2: 208, git: 142, about: 269 };
   const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, about: 6, quest: 5, facts: Infinity, quiz: Infinity, vocab: Infinity };
   const SAYS = {
     web: "Building something new…",
@@ -709,7 +709,7 @@
     act.state = "do"; act.t0 = t;
     act.endAt = act.hold ? Infinity : t + DUR[act.name];
     say(SAYS[act.name]);
-    if (act.name in SPOTS) player.dir = 1;
+    if (act.name in SPOTS) player.dir = (PRESENT && act.name === "mc") ? -1 : 1;
     blip(520, 0.05); setTimeout(() => blip(780, 0.06), 70);
     const pl = PLACE_OF_ACT[act.name];
     if (pl) { game.places.add(pl); if (game.places.size >= 4) award("places"); }
@@ -787,6 +787,38 @@
   function drawGrass(x, y) {
     R(ctx, "#0a0a14", x - 1, y - 1, 8, 8); R(ctx, "#5fbf3f", x, y, 6, 2); R(ctx, "#8a5a30", x, y + 2, 6, 4); R(ctx, "#6b4423", x + 1, y + 3, 1, 1); R(ctx, "#6b4423", x + 4, y + 4, 1, 1); R(ctx, "#3f9a2a", x + 2, y, 1, 1);
   }
+  function drawMcStone(x, y) {
+    R(ctx, "#0a0a14", x - 1, y - 1, 8, 8); R(ctx, "#8d93a3", x, y, 6, 6); R(ctx, "#aab0bf", x, y, 6, 1); R(ctx, "#6b7080", x + 1, y + 2, 2, 1); R(ctx, "#6b7080", x + 3, y + 4, 2, 1); R(ctx, "#6b7080", x, y + 5, 6, 1);
+  }
+  /* presentation mode: the blocks stay on the boat and grow into a little castle */
+  const MC_LAYOUT = [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [1, 1], [2, 1], [3, 1], [4, 1], [2, 2], [3, 2]];
+  const pm = { built: [], done: false };
+  const mcPos = (b) => [boatPos.bx + 10 + b[0] * 9, boatPos.by - 14 - b[1] * 7];
+  const drawMcBlock = (b, x, y) => (b[1] === 0 ? drawGrass(x, y) : drawMcStone(x, y));
+  function drawBoatBlocks(t) {
+    MC_LAYOUT.forEach((b, i) => { if (pm.built[i]) { const [x, y] = mcPos(b); drawMcBlock(b, x, y); } });
+    if (!pm.done) return;
+    const fl = reduce ? 0 : Math.floor(t * 8) % 2;
+    [[0, 0], [5, 0]].forEach((b) => { // torches
+      const [x, y] = mcPos(b);
+      R(ctx, "#0a0a14", x + 1, y - 8, 4, 8); R(ctx, "#6b4423", x + 2, y - 5, 2, 5); R(ctx, fl ? "#ffd34d" : "#ff9d3a", x + 2, y - 7, 2, 2); R(ctx, "#fff6b0", x + 2, y - 7 + fl, 2, 1);
+      glow(ctx, x + 3, y - 6, 12, "255,170,60", 0.45);
+    });
+    const [fx, fy] = mcPos([2, 2]); // flag on the tower
+    const w = reduce ? 0 : Math.round(Math.sin(t * 5));
+    R(ctx, "#0a0a14", fx + 5, fy - 17, 4, 18); R(ctx, "#cfd6e4", fx + 6, fy - 16, 1, 17);
+    R(ctx, "#0a0a14", fx + 6, fy - 17, 12, 8); R(ctx, "#e5484d", fx + 7, fy - 16, 10 + w, 5); R(ctx, "#ffd34d", fx + 9, fy - 15, 2, 2);
+  }
+  function mcFinish() { // sunrise + fireworks + jump
+    pm.done = true;
+    if (!dawnOn) { dawnOn = true; dawnT0 = nowT; }
+    fwUntil = nowT + 9; fwNext = nowT;
+    hop(-2.6); jingle([523, 659, 784, 1046, 1318]);
+    MC_LAYOUT.forEach((b) => { const [x, y] = mcPos(b); burst(x + 3, y + 3, 3, b[1] ? "#cfd6e4" : "#9be07a", "spark"); });
+  }
+  const MC_END = 0.8 + MC_LAYOUT.length * 0.4 + 0.4;
+  function mcInstant() { MC_LAYOUT.forEach((b, i) => { pm.built[i] = true; }); mcFinish(); }
+  function mcReset() { pm.built = []; pm.done = false; dawnOn = false; dawn = 0; fwUntil = 0; }
   function drawPick(hx, hy, dir, f) {
     if (f === 0) { line("#6b4423", hx, hy, hx + 7 * dir, hy - 9); R(ctx, "#0a0a14", hx + 7 * dir - 3, hy - 11, 7, 4); R(ctx, "#cfd6e4", hx + 7 * dir - 2, hy - 10, 5, 2); }
     else { line("#6b4423", hx, hy, hx + 8 * dir, hy + 2); R(ctx, "#0a0a14", hx + 8 * dir - 2, hy - 3, 4, 8); R(ctx, "#cfd6e4", hx + 8 * dir - 1, hy - 2, 2, 6); }
@@ -921,7 +953,25 @@
       once("land", e >= 2.6, () => { mailbox.flag = true; mailbox.downAt = 0; burst(224, 108, 12, "#ffd36b"); jingle([660, 784, 988, 1318]); });
     }
 
-    if (n === "mc") {
+    if (n === "mc" && PRESENT) {
+      const end = pm.done ? 0.3 : MC_END;
+      if (!pm.done && e < end) {
+        const f = Math.floor(e / 0.22) % 2, hx = px - 8, hyy = FOOT - 20 + hy;
+        drawPick(hx, hyy, -1, f);
+        every("sw", e, 0.22, (i) => { if (i % 2 === 1) { burst(hx - 8, hyy + 2, 3, "#ffe08a", "spark"); blip(220, 0.04, 0.025); } });
+      }
+      MC_LAYOUT.forEach((b, i) => {
+        if (pm.built[i]) return;
+        const p = (e - (0.8 + i * 0.4)) / 0.6;
+        if (p < 0) return;
+        const [lx, ly] = mcPos(b);
+        if (p < 1) drawMcBlock(b, Math.round(lerp(px - 8, lx, p)), Math.round(lerp(FOOT - 30, ly, p) - Math.sin(p * Math.PI) * 18));
+        else { pm.built[i] = true; burst(lx + 3, ly + 4, 3, b[1] ? "#cfd6e4" : "#9be07a", "spark"); blip(330 + i * 30, 0.05, 0.025); }
+      });
+      once("fin", e >= end, mcFinish);
+      if (e > end && e < end + 6) every("cel", e, 0.9, () => hop(-2));
+    }
+    if (n === "mc" && !PRESENT) {
       const f = Math.floor(e / 0.22) % 2, hx = px + 8, hyy = FOOT - 20 + hy;
       drawPick(hx, hyy, 1, f);
       every("sw", e, 0.22, (i) => { if (i % 2 === 1) { burst(hx + 8, hyy + 2, 3, "#ffe08a", "spark"); blip(220, 0.04, 0.025); } });
@@ -1361,6 +1411,7 @@
     HOTSPOTS.forEach((h) => { if (PRESENT || h.hide || (h.show && !h.show())) return; drawMarker(h.mx, h.my, game.places.has(h.id) || !!(h.done && h.done()), t, h.n); });
 
     fxBack(t);
+    if (PRESENT) drawBoatBlocks(t);
 
     // personaggio
     const typing = act && act.state === "do" && (act.name === "web" || act.name === "git");
@@ -1505,15 +1556,17 @@
     { act: "stats" },                                             // Skills
     { act: "about", chap: 0, say: CONTENT.chapters[0].text[0] },  // The Beginning: at home
     { act: "inventory", chap: 1, say: CONTENT.chapters[1].text[0] }, // Creating Things: code, books, Minecraft
-    { act: "web" },                                               // Web projects
-    { act: "book1" },                                             // 3:17
-    { act: "book2" },                                             // Diary of a Content Creator
-    { act: "mc" },                                                // Minecraft server
+    { act: "web", say: "I build websites and try new technologies. This site is one of them." },
+    { act: "book1", say: "“3:17” is a book about the mind: memory, consciousness and free will. It's out on Amazon!" },
+    { act: "book2", say: "“Diary of a Content Creator” is a young-adult novel. It's out on Amazon too!" },
+    { act: "mc", say: "I run a Minecraft server where I try gaming projects. Come play!" },
     { act: "quest", chap: 2, say: CONTENT.chapters[2].text[0] }   // The Future
   ];
   function presentSlide() {
     const sl = SLIDES[current]; if (!sl) return;
     if (sl.say) SAYS[sl.act] = sl.say;
+    const mi = SLIDES.findIndex((x) => x.act === "mc");
+    if (current < mi) mcReset(); else if (current > mi && !pm.done) mcInstant();
     perform(sl.act, { hold: true, restart: true });
   }
   let current = 0;

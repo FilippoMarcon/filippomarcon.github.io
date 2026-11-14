@@ -500,13 +500,14 @@
   const FOOT = 128, MINX = 136, MAXX = 296;
   const player = { x: 140, dir: 1, moving: false, hy: 0, vy: 0, target: null };
   const keys = { left: false, right: false };
-  const SPOTS = { web: 158, mc: PRESENT ? 240 : 186, book1: 208, book2: 208, git: 142, about: 269 };
-  const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, about: 6, quest: 5, facts: Infinity, quiz: Infinity, vocab: Infinity };
+  const SPOTS = { web: 158, mc: PRESENT ? 240 : 186, bye: 236, book1: 208, book2: 208, git: 142, about: 269 };
+  const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, bye: Infinity, about: 6, quest: 5, facts: Infinity, quiz: Infinity, vocab: Infinity };
   const SAYS = {
     web: "Building something new…",
     book1: "“3:17” is out on Amazon!",
     book2: "“Diary of a Content Creator” is out on Amazon!",
     mc: "Server online. Come play!",
+    bye: "Thank you!",
     git: "git push origin main",
     profile: "Hi! I'm Filippo. Welcome to my world!",
     stats: "Skill check… not bad!",
@@ -953,6 +954,19 @@
       once("land", e >= 2.6, () => { mailbox.flag = true; mailbox.downAt = 0; burst(224, 108, 12, "#ffd36b"); jingle([660, 784, 988, 1318]); });
     }
 
+    if (n === "bye") {
+      const cy = FOOT - 26 + hy;
+      glow(ctx, px, cy, 52, "255,214,140", 0.32 + 0.12 * Math.sin(e * 3));
+      once("h0", e > 0.3, () => hop(-2.8));
+      if (e > 2) every("hop", e, 1.3, () => hop(-2.3));
+      for (let i = 0; i < 8; i++) { // ring of stars around Filippo
+        const a = e * 2.4 + i * Math.PI / 4, sxx = Math.round(px + Math.cos(a) * 22), syy = Math.round(cy - 6 + Math.sin(a) * 9), c = i % 2 ? "#ffd34d" : "#6ee7d8";
+        R(ctx, c, sxx, syy, 2, 2); if (Math.sin(a) > 0) { R(ctx, "#fff6b0", sxx - 1, syy, 4, 1); R(ctx, "#fff6b0", sxx, syy - 1, 1, 4); }
+      }
+      every("cf", e, 0.1, () => addPart({ x: px - 85 + Math.random() * 170, y: 40, vx: (Math.random() - 0.5) * 0.3, vy: 0.35 + Math.random() * 0.35, life: 100, kind: "bit", col: FW[Math.floor(Math.random() * FW.length)] }));
+      every("hr", e, 0.45, () => addPart({ x: px + (Math.random() * 18 - 9), y: cy - 24, vx: (Math.random() - 0.5) * 0.3, vy: -0.45, life: 52, kind: "heart", col: Math.random() > 0.4 ? "#e86f8f" : "#ffc857" }));
+      once("fw", true, () => { fwUntil = nowT + 3600; fwNext = nowT + 0.2; });
+    }
     if (n === "mc" && PRESENT) {
       const end = pm.done ? 0.3 : MC_END;
       if (!pm.done && e < end) {
@@ -1116,7 +1130,7 @@
   const FW = ["#ffd34d", "#e86f8f", "#6ee7d8", "#a78bfa", "#ff9d5c", "#8ff0a4"];
   function drawRockets(t) {
     if (t < fwUntil && t >= fwNext) {
-      rockets.push({ x: 120 + Math.random() * 190, y: 126, vy: -(2.3 + Math.random() * 0.7), ty: 22 + Math.random() * 40, col: FW[Math.floor(Math.random() * FW.length)] });
+      rockets.push({ x: pmEnding ? player.x - 75 + Math.random() * 150 : 120 + Math.random() * 190, y: 126, vy: -(2.3 + Math.random() * 0.7), ty: pmEnding ? 46 + Math.random() * 26 : 22 + Math.random() * 40, col: FW[Math.floor(Math.random() * FW.length)] });
       fwNext = t + (reduce ? 1.4 : 0.45 + Math.random() * 0.4);
     }
     for (let i = rockets.length - 1; i >= 0; i--) {
@@ -1475,17 +1489,38 @@
   function jump() { if (!blocked()) hop(-2.6); }
   const isKbControl = (e) => !!(e.target && e.target.matches && e.target.matches("button:focus-visible, a:focus-visible, [tabindex]:focus-visible"));
   const isInput = (e) => !!(e.target && e.target.tagName === "INPUT");
+  /* presentation mode: closing scene (press → on the last slide) */
+  let pmEnding = false;
+  const scn = $("scene");
+  function startEnd() {
+    if (pmEnding) return;
+    pmEnding = true; document.body.classList.add("pm-end"); hideBubble();
+    perform("bye", { hold: true, restart: true });
+    jingle([523, 659, 784, 1046, 1318, 1568]);
+    setTimeout(() => {
+      if (!pmEnding) return;
+      const vw = window.innerWidth, vh = window.innerHeight, kz = 1.6, [sx, sy] = sceneToScreen(player.x, FOOT - 26);
+      const dx = Math.max((vw - sx) * (1 - kz), Math.min(sx * (kz - 1), vw * 0.5 - sx)), dy = Math.max((vh - sy) * (1 - kz), Math.min(sy * (kz - 1), vh * 0.62 - sy));
+      scn.style.transformOrigin = `${sx}px ${sy}px`; scn.style.transform = `translate(${dx}px, ${dy}px) scale(${kz})`;
+    }, 1100);
+  }
+  function stopEnd() {
+    if (!pmEnding) return;
+    pmEnding = false; document.body.classList.remove("pm-end"); scn.style.transform = "";
+    fwUntil = 0; rockets.length = 0; presentSlide();
+  }
   function presentKey(e) {
     const k = e.key;
     if (blocked() || isInput(e) || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (["ArrowRight", "d", "D", "PageDown", "ArrowDown", "s", "S"].includes(k)) { e.preventDefault(); goSlide(1); }
+    if (pmEnding) { if (["ArrowLeft", "a", "A", "PageUp", "ArrowUp", "w", "W", "Home", "Backspace"].includes(k)) { e.preventDefault(); stopEnd(); } return; }
+    if (["ArrowRight", "d", "D", "PageDown", "ArrowDown", "s", "S"].includes(k)) { e.preventDefault(); if (current === buttons.length - 1) startEnd(); else goSlide(1); }
     else if (["ArrowLeft", "a", "A", "PageUp", "ArrowUp", "w", "W"].includes(k)) { e.preventDefault(); goSlide(-1); }
     else if (k === "Home") { e.preventDefault(); show(0, true); }
     else if (k === "End") { e.preventDefault(); show(buttons.length - 1, true); }
   }
   window.addEventListener("keydown", (e) => {
     const k = e.key;
-    if (k === "Escape") { if (modalOpen) closeModal(); else if (endOpen) closeEnd(); else if (introOpen) endIntro(); return; }
+    if (k === "Escape") { if (modalOpen) closeModal(); else if (endOpen) closeEnd(); else if (introOpen) endIntro(); else if (PRESENT && pmEnding) stopEnd(); return; }
     if (k === "Tab") { trapTab(e); return; }
     if (PRESENT) { presentKey(e); return; }
     if (blocked() || isInput(e)) return;

@@ -628,3 +628,21 @@ body.present .card .s { font-size: 15px; }
 body.present .pm-hide { display: none; }
 body.present #chapTabs { pointer-events: none; }
 body.present #menu button { font-size: 18px; }
+
+/* presentation mode: closing scene */
+body.present #scene { transition: transform 3.4s cubic-bezier(.5, 0, .15, 1); }
+#pmEnd { display: none; position: fixed; inset: 0; z-index: 60; pointer-events: none; }
+body.pm-end #pmEnd { display: block; }
+body.pm-end .ui, body.pm-end #bubble, body.pm-end #pmLink { opacity: 0 !important; pointer-events: none !important; transition: opacity .7s; }
+.end-bar { position: absolute; left: 0; right: 0; height: 0; background: #02030a; animation: endbar 1.6s ease forwards; }
+.end-bar.top { top: 0; } .end-bar.bot { bottom: 0; }
+@keyframes endbar { to { height: 10vh; } }
+.end-txt { position: absolute; top: 11.5vh; left: 0; right: 0; text-align: center; text-shadow: 0 4px 0 #0a0a14, 0 0 28px rgba(0, 0, 0, .75); }
+.end-txt > * { margin: 0; opacity: 0; }
+.end-txt h1 { font-family: "Press Start 2P", monospace; font-weight: 400; font-size: clamp(24px, 4.2vw, 80px); color: var(--cream); letter-spacing: .04em; animation: endin .9s ease 1.7s forwards; }
+.end-txt h2 { font-family: "Press Start 2P", monospace; font-weight: 400; font-size: clamp(14px, 2.2vw, 42px); color: var(--gold); margin-top: .7em; animation: endin .9s ease 2.7s forwards; }
+.end-txt .e3 { font-family: "Press Start 2P", monospace; font-size: clamp(10px, 1.2vw, 22px); color: var(--teal); margin-top: 1.4em; animation: endin .9s ease 3.9s forwards; }
+.end-txt .e4 { font-family: "Pixelify Sans", sans-serif; font-size: clamp(18px, 1.9vw, 34px); color: var(--cream); margin-top: .5em; animation: endin .9s ease 5s forwards, endblink 1.6s steps(2, jump-none) 6.2s infinite; }
+@keyframes endin { from { opacity: 0; transform: translateY(24px) scale(.96); } to { opacity: 1; transform: none; } }
+@keyframes endblink { 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { body.present #scene { transition: none; } .end-bar, .end-txt > * { animation-duration: .01s !important; } }

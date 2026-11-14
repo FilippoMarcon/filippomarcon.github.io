@@ -618,6 +618,7 @@
     setTimeout(() => { bannerEl.className = ""; setTimeout(nextBanner, 300); }, 3600);
   }
   function checkBadges() {
+    if (PRESENT) return;
     BADGES.forEach((b) => {
       if (game.badges.has(b.id) || !b.ok()) return;
       game.badges.add(b.id);
@@ -1496,8 +1497,25 @@
   /* ================= INTERFACCIA ================= */
   let introEndAt = -9;
   const justStarted = () => performance.now() / 1000 - introEndAt < 0.8; // ignore hover that appears under the cursor when the intro closes
-  const buttons = [...document.querySelectorAll("#menu button")].filter((b) => PRESENT || !b.classList.contains("pm-only"));
+  const buttons = [...document.querySelectorAll("#menu button")].filter((b) => PRESENT ? !b.classList.contains("pm-hide") : !b.classList.contains("pm-only"));
   const PANEL_ACT = { profile: "profile", skills: "stats", about: "about", inventory: "inventory", facts: "facts", quiz: "quiz", vocab: "vocab", quest: "quest" };
+  /* presentation mode: one slide per menu item; Filippo walks and acts out what is written */
+  const SLIDES = [
+    { act: "profile" },                                           // Profile
+    { act: "stats" },                                             // Skills
+    { act: "about", chap: 0, say: CONTENT.chapters[0].text[0] },  // The Beginning: at home
+    { act: "inventory", chap: 1, say: CONTENT.chapters[1].text[0] }, // Creating Things: code, books, Minecraft
+    { act: "web" },                                               // Web projects
+    { act: "book1" },                                             // 3:17
+    { act: "book2" },                                             // Diary of a Content Creator
+    { act: "mc" },                                                // Minecraft server
+    { act: "quest", chap: 2, say: CONTENT.chapters[2].text[0] }   // The Future
+  ];
+  function presentSlide() {
+    const sl = SLIDES[current]; if (!sl) return;
+    if (sl.say) SAYS[sl.act] = sl.say;
+    perform(sl.act, { hold: true, restart: true });
+  }
   let current = 0;
   const pmProgress = $("pmProgress");
   function goSlide(d) { const n = Math.max(0, Math.min(buttons.length - 1, current + d)); if (n !== current) show(n, true); }
@@ -1515,7 +1533,11 @@
     if (name === "quiz" && !quiz.running) renderQuiz();
     if (name === "quest") renderQuest();
     if (sound) blip(660 + current * 70);
-    if (PRESENT) { pmProgress.textContent = `${current + 1}/${buttons.length}`; const lf = document.querySelector(".left"); if (lf) lf.scrollTop = 0; }
+    if (PRESENT) {
+      pmProgress.textContent = `${current + 1}/${buttons.length}`; const lf = document.querySelector(".left"); if (lf) lf.scrollTop = 0;
+      const sl = SLIDES[current]; if (sl && sl.chap != null) { chapIdx = sl.chap; renderChapters(); }
+      if (!silent) presentSlide();
+    }
     if (!silent && !PRESENT) {
       if (["profile", "skills", "about", "inventory"].includes(name)) setTimeout(() => award(name), 600);
       perform(PANEL_ACT[name], { hold: ["facts", "quiz", "vocab"].includes(name) });
@@ -1709,12 +1731,10 @@
     // presentation mode: no intro, everything unlocked, quick links as the last slide
     introOpen = false; intro.hidden = true; introEndAt = performance.now() / 1000;
     player.x = 200; // idle spot in the middle of the pier, clear of the text panel
-    ["floppy", "book", "block"].forEach((id) => game.items.add(id)); game.chestOpen = true; renderInventory();
-    FACTS.forEach((_, i) => unlocked.add(i)); renderFacts();
-    document.querySelectorAll(".vcard").forEach((c) => { c.classList.add("open"); c.querySelector(".vhead").setAttribute("aria-expanded", "true"); });
-    VOCAB.forEach((_, i) => game.flipped.add(i)); vfound.textContent = `${game.flipped.size}/${VOCAB.length}`;
     const board = document.querySelector(".board"), host = $("linksHost");
+    const lh = document.querySelector("#p-links h2"); if (lh) lh.textContent = "My projects";
     if (board && host) { host.appendChild(board); const bt = board.querySelector(".board-title"); if (bt) bt.textContent = "Quick links · click to preview"; }
     show(0, false, true);
+    setTimeout(presentSlide, 600);
   } else { intro.hidden = false; $("introStart").focus(); runIntro(); }
 })();

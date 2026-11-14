@@ -591,3 +591,35 @@ html.reduce *, html.reduce *::before, html.reduce *::after { animation: none !im
   #banner { top: 150px; }
 }
 @media (prefers-reduced-motion: reduce) { #guide.shake { animation: none; } }
+
+/* ---------- presentation mode (?present=1) ---------- */
+.pm-only { display: none; }
+body.present .pm-only { display: revert; }
+.snd.pm-link { display: inline-flex; align-items: center; text-decoration: none; color: #1a0f2a; background: var(--gold); border-color: #a8741f; text-shadow: none; }
+.snd.pm-link:hover, .snd.pm-link:focus-visible { background: #ffe08a; border-color: var(--cream); }
+#pmExit { display: none; }
+body.present #pmExit { display: inline-flex; }
+body.present #pmLink, body.present .intro .pm-link { display: none; }
+
+.pm-progress { display: none; }
+body.present .xp > :not(.pm-progress) { display: none; }
+body.present .pm-progress { display: block; font-family: "Press Start 2P", monospace; font-size: 16px; color: var(--gold); padding: 4px 14px; text-shadow: 3px 3px 0 #05081a; }
+
+/* nothing game-like on screen */
+body.present #guide, body.present #toast, body.present #banner, body.present #prompt, body.present #finale,
+body.present .controls, body.present .st-badges, body.present .cnt, body.present #btn,
+body.present #p-facts .note.top, body.present #p-vocab .note.top, body.present #p-quest #qlog ~ * { display: none !important; }
+
+/* bigger text for a projector */
+body.present .left { width: min(660px, 100%); }
+body.present .window { zoom: 1.2; }
+body.present #menu { grid-template-columns: repeat(3, max-content); gap: 2px 24px; }
+body.present #menu button { font-size: 20px; }
+
+/* quick links as a slide: big cards, preview on click */
+body.present .board { position: static; margin: 0; }
+body.present .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+body.present .card { height: auto; min-height: 96px; grid-template-columns: 40px minmax(0, 1fr); }
+body.present .card .icon { width: 40px; height: 40px; }
+body.present .card .t { font-size: 20px; }
+body.present .card .s { font-size: 15px; }

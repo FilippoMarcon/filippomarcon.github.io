@@ -1,4 +1,10 @@
 (() => {
+  /* ================= PRESENTATION MODE: ?present=1 =================
+     Linear slides, everything unlocked, no game counters. Without the
+     parameter the game works exactly as before. */
+  const PRESENT = (() => { try { const q = new URLSearchParams(location.search); return q.has("present") && !["0", "false", "no", "off"].includes((q.get("present") || "").toLowerCase()); } catch (e) { return false; } })();
+  if (PRESENT) document.body.classList.add("present");
+
   /* ================= SCENA PIXEL ART (320x180) ================= */
   const W = 320, H = 180, HOR = 100;
   const cv = document.getElementById("scene");
@@ -451,9 +457,10 @@
   const XP_PER_LEVEL = 50, MAX_LEVEL = 7;
 
   /* ================= SETTINGS + AUDIO ================= */
-  const settings = { sound: true, volume: 0.6, reduce: window.matchMedia("(prefers-reduced-motion: reduce)").matches };
-  try { Object.assign(settings, JSON.parse(localStorage.getItem("fm-settings") || "{}")); } catch (e) { /* storage not available */ }
-  const saveSettings = () => { try { localStorage.setItem("fm-settings", JSON.stringify(settings)); } catch (e) { /* ignore */ } };
+  const SKEY = PRESENT ? "fm-settings-present" : "fm-settings";
+  const settings = { sound: !PRESENT, volume: 0.6, reduce: window.matchMedia("(prefers-reduced-motion: reduce)").matches };
+  try { Object.assign(settings, JSON.parse(localStorage.getItem(SKEY) || "{}")); } catch (e) { /* storage not available */ }
+  const saveSettings = () => { try { localStorage.setItem(SKEY, JSON.stringify(settings)); } catch (e) { /* ignore */ } };
   let audio, soundOn = !!settings.sound, reduce = !!settings.reduce;
   function blip(f = 660, d = 0.05, vol = 0.03) {
     if (!soundOn || settings.volume <= 0) return;
@@ -574,6 +581,7 @@
     renderQuest();
   }
   function addXP(n, label) {
+    if (PRESENT) return;
     const before = level(); game.xp += n; setHUD();
     if (label) toast(`+${n} XP · ${label}`);
     if (level() > before) {
@@ -581,7 +589,7 @@
     }
   }
   function award(id) {
-    if (game.done.has(id)) return;
+    if (PRESENT || game.done.has(id)) return;
     const a = ACH.find((x) => x.id === id); if (!a) return;
     game.done.add(id);
     addXP(a.xp); toast(`★ ${a.bonus ? "Bonus" : "Quest"} complete: ${a.t} (+${a.xp} XP)`, "ach"); jingle([660, 880]);
@@ -668,7 +676,7 @@
   function renderQuest() {
     const ml = $("qlog"); if (!ml) return;
     const row = (a) => `<li class="${game.done.has(a.id) ? "done" : ""}"><span>${game.done.has(a.id) ? "✔" : "□"}</span>${a.secret && !game.done.has(a.id) ? "??? (secret)" : a.t}<em>+${a.xp} XP</em></li>`;
-    ml.innerHTML = ROUTE.map((r) => `<li class="${r.done() ? "done" : ""}"><span>${r.done() ? "✔" : "□"}</span>${r.text}<em>${r.where}</em></li>`).join("");
+    ml.innerHTML = ROUTE.map((r, i) => PRESENT ? `<li><span>${i + 1}.</span>${r.text}<em>${r.where}</em></li>` : `<li class="${r.done() ? "done" : ""}"><span>${r.done() ? "✔" : "□"}</span>${r.text}<em>${r.where}</em></li>`).join("");
     $("bonuslog").innerHTML = BONUS.map(row).join("");
     $("qfound").textContent = `${ROUTE.filter((r) => r.done()).length}/${ROUTE.length}`;
     $("bfound").textContent = `${BONUS.filter((a) => game.done.has(a.id)).length}/${BONUS.length}`;
@@ -1198,6 +1206,7 @@
   /* ---- guide bar + on-scene arrows ---- */
   const guideEl = $("guide"), guideStep = $("guideStep"), guideText = $("guideText");
   function updateGuide() {
+    if (PRESENT) { gTarget = null; gDir = 0; return; }
     const s = currentStep(), done = ROUTE.filter((r) => r.done()).length;
     let step, text; gDir = 0; gTarget = s && s.hot ? s.hot : null;
     if (!s) { step = "COMPLETE"; text = "You reached the end. Thanks for playing!"; }
@@ -1294,7 +1303,7 @@
 
     // stelle da raccogliere
     STARS.forEach((s, i) => {
-      if (s.got) return;
+      if (s.got || PRESENT) return;
       const sy = s.y + Math.sin(t * 3 + s.p) * 2;
       if (Math.abs(player.x - s.x) < 8 && (Math.abs(FOOT - 22 + player.hy - sy) < 9 || Math.abs(FOOT - 40 + player.hy - sy) < 8)) {
         s.got = true; game.stars++; setHUD();
@@ -1337,18 +1346,18 @@
     glow(ctx, 269, 112, 14, "255,200,100", 0.5);
     if (mailbox.flag) { R(ctx, "#0a0a14", 229, 98, 3, 10); R(ctx, "#ffd36b", 230, 99, 1, 8); R(ctx, "#0a0a14", 227, 98, 6, 5); R(ctx, "#ffc857", 228, 99, 4, 3); }
     drawDoorOpen(t);
-    drawWorld(t); drawFinishSign(t); drawDawn();
+    drawWorld(t); if (!PRESENT) drawFinishSign(t); drawDawn();
 
     // stelle
     STARS.forEach((s) => {
-      if (s.got) return;
+      if (s.got || PRESENT) return;
       const sy = Math.round(s.y + Math.sin(t * 3 + s.p) * 2);
       glow(ctx, s.x, sy, 10, "255,215,90", 0.9);
       drawStar(s.x - 4, sy - 5);
     });
 
     // segnaposto dei luoghi
-    HOTSPOTS.forEach((h) => { if (h.hide || (h.show && !h.show())) return; drawMarker(h.mx, h.my, game.places.has(h.id) || !!(h.done && h.done()), t, h.n); });
+    HOTSPOTS.forEach((h) => { if (PRESENT || h.hide || (h.show && !h.show())) return; drawMarker(h.mx, h.my, game.places.has(h.id) || !!(h.done && h.done()), t, h.n); });
 
     fxBack(t);
 
@@ -1393,7 +1402,7 @@
       bub.style.top = Math.max(70, by) + "px";
     }
     const nh = nearHotspot();
-    if (nh && !act && !player.moving && !blocked()) {
+    if (nh && !act && !player.moving && !blocked() && !PRESENT) {
       const [ax, ay] = sceneToScreen(nh.mx, nh.my - 10);
       promptEl.textContent = touchUI ? "Tap A" : "Press E";
       promptEl.style.left = ax + "px"; promptEl.style.top = ay + "px"; promptEl.classList.add("show");
@@ -1414,10 +1423,19 @@
   function jump() { if (!blocked()) hop(-2.6); }
   const isKbControl = (e) => !!(e.target && e.target.matches && e.target.matches("button:focus-visible, a:focus-visible, [tabindex]:focus-visible"));
   const isInput = (e) => !!(e.target && e.target.tagName === "INPUT");
+  function presentKey(e) {
+    const k = e.key;
+    if (blocked() || isInput(e) || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (["ArrowRight", "d", "D", "PageDown", "ArrowDown", "s", "S"].includes(k)) { e.preventDefault(); goSlide(1); }
+    else if (["ArrowLeft", "a", "A", "PageUp", "ArrowUp", "w", "W"].includes(k)) { e.preventDefault(); goSlide(-1); }
+    else if (k === "Home") { e.preventDefault(); show(0, true); }
+    else if (k === "End") { e.preventDefault(); show(buttons.length - 1, true); }
+  }
   window.addEventListener("keydown", (e) => {
     const k = e.key;
     if (k === "Escape") { if (modalOpen) closeModal(); else if (endOpen) closeEnd(); else if (introOpen) endIntro(); return; }
     if (k === "Tab") { trapTab(e); return; }
+    if (PRESENT) { presentKey(e); return; }
     if (blocked() || isInput(e)) return;
     if (k === "ArrowLeft" || k === "a" || k === "A") keys.left = true;
     else if (k === "ArrowRight" || k === "d" || k === "D") keys.right = true;
@@ -1457,8 +1475,9 @@
 
   // click on the scene: walk, or interact with objects
   function hotspotAt(sx_, sy_) { return HOTSPOTS.find((h) => sx_ >= h.bx[0] && sx_ <= h.bx[2] && sy_ >= h.bx[1] && sy_ <= h.bx[3]); }
+  if (PRESENT) cv.style.pointerEvents = "none";
   cv.addEventListener("click", (e) => {
-    if (blocked()) return;
+    if (PRESENT || blocked()) return;
     const [sx_, sy_] = screenToScene(e.clientX, e.clientY);
     const h = hotspotAt(sx_, sy_);
     if (h && h.run) {
@@ -1477,9 +1496,11 @@
   /* ================= INTERFACCIA ================= */
   let introEndAt = -9;
   const justStarted = () => performance.now() / 1000 - introEndAt < 0.8; // ignore hover that appears under the cursor when the intro closes
-  const buttons = [...document.querySelectorAll("#menu button")];
+  const buttons = [...document.querySelectorAll("#menu button")].filter((b) => PRESENT || !b.classList.contains("pm-only"));
   const PANEL_ACT = { profile: "profile", skills: "stats", about: "about", inventory: "inventory", facts: "facts", quiz: "quiz", vocab: "vocab", quest: "quest" };
   let current = 0;
+  const pmProgress = $("pmProgress");
+  function goSlide(d) { const n = Math.max(0, Math.min(buttons.length - 1, current + d)); if (n !== current) show(n, true); }
   function showPanel(name) {
     const i = buttons.findIndex((b) => b.dataset.panel === name);
     if (i >= 0) show(i, false, false);
@@ -1494,17 +1515,18 @@
     if (name === "quiz" && !quiz.running) renderQuiz();
     if (name === "quest") renderQuest();
     if (sound) blip(660 + current * 70);
-    if (!silent) {
+    if (PRESENT) { pmProgress.textContent = `${current + 1}/${buttons.length}`; const lf = document.querySelector(".left"); if (lf) lf.scrollTop = 0; }
+    if (!silent && !PRESENT) {
       if (["profile", "skills", "about", "inventory"].includes(name)) setTimeout(() => award(name), 600);
       perform(PANEL_ACT[name], { hold: ["facts", "quiz", "vocab"].includes(name) });
     }
   }
   buttons.forEach((bt, i) => {
     bt.addEventListener("click", () => show(i, true));
-    bt.addEventListener("mouseenter", () => { if (i !== current && !justStarted()) show(i, true); });
+    bt.addEventListener("mouseenter", () => { if (!PRESENT && i !== current && !justStarted()) show(i, true); });
   });
   window.addEventListener("keydown", (e) => {
-    if (blocked() || isInput(e)) return;
+    if (PRESENT || blocked() || isInput(e)) return;
     if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") { e.preventDefault(); show(current + 1, true); }
     else if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") { e.preventDefault(); show(current - 1, true); }
   });
@@ -1512,10 +1534,12 @@
   // elementi che attivano le azioni (quest board, inventario, GitHub)
   document.querySelectorAll("[data-act]").forEach((el) => {
     const name = el.dataset.act;
-    el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse" && !justStarted()) perform(name, { hold: true }); });
-    el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") release(name); });
-    el.addEventListener("focus", () => { if (el.matches(":focus-visible")) perform(name, { hold: true }); });
-    el.addEventListener("blur", () => release(name));
+    if (!PRESENT) {
+      el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse" && !justStarted()) perform(name, { hold: true }); });
+      el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") release(name); });
+      el.addEventListener("focus", () => { if (el.matches(":focus-visible")) perform(name, { hold: true }); });
+      el.addEventListener("blur", () => release(name));
+    }
     el.addEventListener("click", () => { perform(name, { restart: true }); blip(740, 0.05); });
   });
 
@@ -1681,5 +1705,16 @@
   paintIcons(document);
   renderChapters(); renderInventory(); setHUD();
   show(0, false, true);
-  intro.hidden = false; $("introStart").focus(); runIntro();
+  if (PRESENT) {
+    // presentation mode: no intro, everything unlocked, quick links as the last slide
+    introOpen = false; intro.hidden = true; introEndAt = performance.now() / 1000;
+    player.x = 200; // idle spot in the middle of the pier, clear of the text panel
+    ["floppy", "book", "block"].forEach((id) => game.items.add(id)); game.chestOpen = true; renderInventory();
+    FACTS.forEach((_, i) => unlocked.add(i)); renderFacts();
+    document.querySelectorAll(".vcard").forEach((c) => { c.classList.add("open"); c.querySelector(".vhead").setAttribute("aria-expanded", "true"); });
+    VOCAB.forEach((_, i) => game.flipped.add(i)); vfound.textContent = `${game.flipped.size}/${VOCAB.length}`;
+    const board = document.querySelector(".board"), host = $("linksHost");
+    if (board && host) { host.appendChild(board); const bt = board.querySelector(".board-title"); if (bt) bt.textContent = "Quick links · click to preview"; }
+    show(0, false, true);
+  } else { intro.hidden = false; $("introStart").focus(); runIntro(); }
 })();

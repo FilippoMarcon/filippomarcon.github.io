@@ -27,8 +27,11 @@
         <div class="xpbar" id="xpbar" aria-hidden="true"></div>
         <span id="xpnum">0 XP</span>
         <span id="starnum" class="starnum">★ 0/6</span>
+        <span id="pmProgress" class="pm-progress" aria-label="Section">1/9</span>
       </div>
       <div class="ctrls">
+        <a id="pmLink" class="snd pm-link" href="?present=1">▶ PRESENTATION MODE</a>
+        <a id="pmExit" class="snd pm-link" href="./">EXIT PRESENTATION</a>
         <button type="button" class="snd js-mot" aria-pressed="false" aria-label="Reduce animations">MOTION: FULL</button>
         <label class="vol"><span>VOL</span><input type="range" class="js-vol" min="0" max="100" value="60" aria-label="Volume"></label>
         <button type="button" id="snd" class="snd js-snd" aria-pressed="true">SOUND: ON</button>
@@ -43,6 +46,12 @@
         <button type="button" data-panel="profile" class="sel">Profile</button>
         <button type="button" data-panel="skills">Skills</button>
         <button type="button" data-panel="about">About me</button>
+        <button type="button" data-panel="inventory" class="pm-only">Inventory</button>
+        <button type="button" data-panel="facts" class="pm-only">Fun facts</button>
+        <button type="button" data-panel="quiz" class="pm-only">Quiz</button>
+        <button type="button" data-panel="vocab" class="pm-only">Tech words</button>
+        <button type="button" data-panel="quest" class="pm-only">Your route</button>
+        <button type="button" data-panel="links" class="pm-only">Quick links</button>
       </nav>
 
       <div class="window" id="window">
@@ -107,6 +116,13 @@
           <h2>Tech words</h2>
           <p class="note top">English words I use when I code. Open them all! <b id="vfound"></b></p>
           <div id="vocabBox" class="vocab"></div>
+        </article>
+
+        <!-- QUICK LINKS (presentation mode) -->
+        <article class="panel" id="p-links">
+          <h2>Quick links</h2>
+          <p class="note top">Click a card to preview it.</p>
+          <div id="linksHost"></div>
         </article>
 
         <!-- QUEST LOG -->
@@ -191,6 +207,7 @@
         <button type="button" id="introSkip" class="action ghost">Skip intro</button>
       </div>
       <div class="intro-opts">
+        <a class="snd pm-link" href="?present=1">▶ PRESENTATION MODE</a>
         <button type="button" class="snd js-mot" aria-pressed="false" aria-label="Reduce animations">MOTION: FULL</button>
         <label class="vol"><span>VOL</span><input type="range" class="js-vol" min="0" max="100" value="60" aria-label="Volume"></label>
         <button type="button" class="snd js-snd" aria-pressed="true">SOUND: ON</button>

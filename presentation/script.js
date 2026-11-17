@@ -770,7 +770,20 @@
     R(ctx, "#0a0a14", x - 2, y - 2, w + 4, hh + 4); R(ctx, "#cfd6e4", x - 1, y - 1, w + 2, hh + 2); R(ctx, "#0f1840", x, y, w, hh);
     return hh;
   }
-  const POP_Y = 22;
+  /* popups sit below the HUD: the canvas is scaled with object-fit: cover, so on wide/short windows
+     the top of the 320x180 scene is cropped and the HUD (+ the "5/9" counter) would cover them */
+  let POP_Y = 22;
+  function updatePopY() {
+    const vw = window.innerWidth, vh = window.innerHeight;
+    if (!vw || !vh) return;
+    const scale = Math.max(vw / W, vh / H);
+    const cropTop = Math.max(0, (H - vh / scale) / 2);
+    const hud = document.querySelector(".hud");
+    const hudBottom = hud ? hud.getBoundingClientRect().bottom : 0;
+    POP_Y = Math.max(22, Math.min(60, Math.ceil(cropTop + hudBottom / scale) + 8));
+  }
+  updatePopY();
+  window.addEventListener("resize", updatePopY);
   const popX = (px, w) => Math.round(Math.max(124, Math.min(px - 18, 218 - w)));
 
   function drawBookSprite(x, y, v) {

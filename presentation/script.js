@@ -240,8 +240,10 @@
 
   /* ---- barca ---- */
   const boatPos = { bx: 160, by: 143 };
+  const ride = { on: false, dx: 0, target: 0 }, fxs = { jet: false, boost: false };
+  let flyY = 0, rideY = 0;
   function drawBoat(c, t) {
-    const bx = boatPos.bx, by = 143 + Math.round(Math.sin(t * 1.4));
+    const bx = boatPos.bx + Math.round(ride.dx), by = 143 + Math.round(Math.sin(t * 1.4));
     boatPos.by = by;
     for (let i = 0; i < 11; i++) {
       const inset = Math.round(i * 0.9), y = by - 8 + i;
@@ -710,7 +712,7 @@
     act.state = "do"; act.t0 = t;
     act.endAt = act.hold ? Infinity : t + DUR[act.name];
     say(SAYS[act.name]);
-    if (act.name in SPOTS) player.dir = (PRESENT && act.name === "mc") ? -1 : 1;
+    if (act.name in SPOTS) player.dir = 1;
     blip(520, 0.05); setTimeout(() => blip(780, 0.06), 70);
     const pl = PLACE_OF_ACT[act.name];
     if (pl) { game.places.add(pl); if (game.places.size >= 4) award("places"); }
@@ -833,22 +835,27 @@
   const MC_END = 0.8 + MC_LAYOUT.length * 0.4 + 0.4;
   function mcInstant() { pm.done = true; }
   function mcReset() { pm.built = []; pm.done = false; dawnOn = false; dawn = 0; fwUntil = 0; }
-  /* presentation: fantasy realms. Minecraft world on the Minecraft slide, sky kingdom on the Future slide */
-  const realm = { name: null, p: 0, dir: 0 };
-  let flyY = 0;
+  /* presentation: fantasy realms. The boat sails into a Minecraft world, a jetpack then flies to a sky kingdom */
+  const realm = { name: null, under: null, p: 0, dir: 0 };
   const realmCv = document.createElement("canvas"); realmCv.width = W; realmCv.height = H;
   const rg = realmCv.getContext("2d"); rg.imageSmoothingEnabled = false;
   const realmCache = {};
-  function realmGo(name) {
-    if (name) { if (realm.name !== name) { realm.name = name; realm.p = 0; } realm.dir = 1; if (reduce) realm.p = 1; }
+  const tileNoise = (() => { const r = rng(3), a = []; for (let i = 0; i < 40 * 23; i++) a.push(r()); return a; })();
+  const RIDE_X0 = 188, rideBob = () => Math.round(Math.sin(nowT * 1.4));
+  const footY = () => Math.round(FOOT + player.hy + flyY + rideY) + (ride.on && rideY > 3 ? rideBob() : 0);
+  function realmGo(name, under) {
+    if (name) { if (realm.name !== name) { realm.name = name; realm.under = under || null; realm.p = 0; } realm.dir = 1; if (reduce) realm.p = 1; }
     else if (realm.name) realm.dir = -1;
   }
   function realmStep() {
     if (!PRESENT) return;
-    if (realm.dir > 0) { realm.p = Math.min(1, realm.p + (reduce ? 1 : 1 / 36)); if (realm.p >= 1) realm.dir = 0; }
-    else if (realm.dir < 0) { realm.p = Math.max(0, realm.p - (reduce ? 1 : 1 / 15)); if (realm.p <= 0) { realm.dir = 0; realm.name = null; } }
-    const target = realm.name === "sky" && realm.dir >= 0 ? -34 : 0;
+    if (realm.dir > 0) { realm.p = Math.min(1, realm.p + (reduce ? 1 : 1 / 36)); if (realm.p >= 1) { realm.dir = 0; realm.under = null; } }
+    else if (realm.dir < 0) { realm.p = Math.max(0, realm.p - (reduce ? 1 : 1 / 15)); if (realm.p <= 0) { realm.dir = 0; realm.name = null; realm.under = null; } }
+    const target = (realm.name === "sky" && realm.dir >= 0) || fxs.boost ? -42 : 0;
     flyY += (target - flyY) * 0.07; if (Math.abs(flyY - target) < 0.2) flyY = target;
+    rideY += ((ride.on ? 6 : 0) - rideY) * 0.3; if (Math.abs(rideY - (ride.on ? 6 : 0)) < 0.2) rideY = ride.on ? 6 : 0;
+    ride.dx += (ride.target - ride.dx) * 0.035; if (Math.abs(ride.dx - ride.target) < 0.05) ride.dx = ride.target;
+    if (ride.on) player.x = RIDE_X0 + ride.dx;
   }
   function disc(g, col, cx, cy, r) { for (let dy = -r; dy <= r; dy++) { const dx = Math.floor(Math.sqrt(r * r - dy * dy)); R(g, col, Math.round(cx - dx), Math.round(cy + dy), dx * 2 + 1, 1); } }
   function puff(g, x, y, s, col, sh) {
@@ -859,24 +866,27 @@
   const newCv = () => { const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); g.imageSmoothingEnabled = false; return [c, g]; };
   function mcStatic() {
     if (realmCache.mc) return realmCache.mc;
-    const [c, g] = newCv(), r = rng(11);
+    const [c, g] = newCv(), r = rng(11), WY = 135, SX = 252;
     ["#4fa9ec", "#62b8f2", "#77c5f6", "#8dd1f9", "#a4dcfb", "#bce7fd"].forEach((col, i) => R(g, col, 0, i * 22, W, 23));
     for (let x = 0; x < W; x += 8) { // far hills made of blocks
       const h = 3 + Math.round(1.6 * Math.sin(x * 0.045) + 1.2 * Math.sin(x * 0.12 + 1));
-      R(g, "#6fb85c", x, FOOT - h * 8, 8, h * 8); R(g, "#8ad06c", x, FOOT - h * 8, 8, 3); R(g, "#5da84a", x, FOOT - h * 8, 1, h * 8);
+      R(g, "#6fb85c", x, WY - h * 8, 8, h * 8); R(g, "#8ad06c", x, WY - h * 8, 8, 3); R(g, "#5da84a", x, WY - h * 8, 1, h * 8);
     }
-    R(g, "#8a5a30", 0, FOOT, W, 24); R(g, "#8d93a3", 0, FOOT + 24, W, H - FOOT - 24);
-    for (let i = 0; i < 70; i++) R(g, r() > 0.5 ? "#6b4423" : "#a06a3a", Math.floor(r() * W), FOOT + 6 + Math.floor(r() * 18), 2 + Math.floor(r() * 2), 2);
-    for (let i = 0; i < 50; i++) R(g, r() > 0.5 ? "#6b7080" : "#aab0bf", Math.floor(r() * W), FOOT + 26 + Math.floor(r() * 24), 3, 2);
-    for (let i = 0; i < 8; i++) { const x = Math.floor(r() * (W / 8)) * 8 + 2, y = FOOT + 26 + Math.floor(r() * 5) * 8; R(g, i % 2 ? "#6ee7d8" : "#2a2a33", x, y, 4, 4); R(g, "#fff", x + 1, y + 1, 1, 1); }
-    for (let x = 0; x < W; x += 8) R(g, "rgba(0,0,0,0.13)", x, FOOT, 1, H - FOOT);
-    for (let y = FOOT + 8; y < H; y += 8) R(g, "rgba(0,0,0,0.13)", 0, y, W, 1);
-    R(g, "#5fbf3f", 0, FOOT, W, 4); R(g, "#7ad85a", 0, FOOT, W, 1);
-    for (let x = 0; x < W; x += 8) R(g, "#4aa22f", x + ((x / 8) % 2) * 3 + 2, FOOT + 2, 2, 2);
-    [22, 68, 268, 306].forEach((x) => { // trees
-      R(g, "#6b4423", x, FOOT - 26, 5, 26); R(g, "#4a2f17", x, FOOT - 26, 1, 26);
-      R(g, "#2f8f2f", x - 10, FOOT - 44, 25, 10); R(g, "#2f8f2f", x - 6, FOOT - 52, 17, 8);
-      R(g, "#3fae3f", x - 10, FOOT - 44, 25, 2); R(g, "#3fae3f", x - 6, FOOT - 52, 17, 2); R(g, "#24762a", x - 10, FOOT - 36, 25, 2);
+    R(g, "#2f6bd8", 0, WY, W, H - WY); R(g, "#4b86ea", 0, WY, W, 3); R(g, "#2559b8", 0, WY + 24, W, H - WY - 24);
+    for (let x = 0; x < W; x += 8) R(g, "rgba(0,0,0,0.10)", x, WY, 1, H - WY);
+    for (let y = WY + 8; y < H; y += 8) R(g, "rgba(0,0,0,0.10)", 0, y, W, 1);
+    R(g, "#8a5a30", SX, 128, W - SX, 24); R(g, "#8d93a3", SX, 152, W - SX, H - 152);
+    for (let i = 0; i < 30; i++) R(g, r() > 0.5 ? "#6b4423" : "#a06a3a", SX + Math.floor(r() * (W - SX)), 134 + Math.floor(r() * 16), 2 + Math.floor(r() * 2), 2);
+    for (let i = 0; i < 20; i++) R(g, r() > 0.5 ? "#6b7080" : "#aab0bf", SX + Math.floor(r() * (W - SX)), 154 + Math.floor(r() * 24), 3, 2);
+    for (let i = 0; i < 3; i++) { const x = SX + 8 + i * 22, y = 156 + (i % 2) * 8; R(g, i % 2 ? "#6ee7d8" : "#2a2a33", x, y, 4, 4); R(g, "#fff", x + 1, y + 1, 1, 1); }
+    for (let x = SX; x < W; x += 8) R(g, "rgba(0,0,0,0.13)", x, 128, 1, H - 128);
+    for (let y = 136; y < H; y += 8) R(g, "rgba(0,0,0,0.13)", SX, y, W - SX, 1);
+    R(g, "#5fbf3f", SX, 128, W - SX, 4); R(g, "#7ad85a", SX, 128, W - SX, 1);
+    for (let x = SX; x < W; x += 8) R(g, "#4aa22f", x + ((x / 8) % 2) * 3 + 2, 130, 2, 2);
+    [270, 306].forEach((x) => { // trees
+      R(g, "#6b4423", x, 102, 5, 26); R(g, "#4a2f17", x, 102, 1, 26);
+      R(g, "#2f8f2f", x - 10, 84, 25, 10); R(g, "#2f8f2f", x - 6, 76, 17, 8);
+      R(g, "#3fae3f", x - 10, 84, 25, 2); R(g, "#3fae3f", x - 6, 76, 17, 2); R(g, "#24762a", x - 10, 92, 25, 2);
     });
     return (realmCache.mc = c);
   }
@@ -887,6 +897,16 @@
       const cx = Math.round(((x + (reduce ? 0 : t) * 5 * s) % (W + 60)) - 40);
       R(g, "#fff", cx, y, 28, 7); R(g, "#fff", cx + 6, y - 6, 15, 7); R(g, "#dff1ff", cx, y + 5, 28, 2);
     });
+    for (let i = 0; i < 30; i++) { const x = Math.round(((i * 37 + (reduce ? 0 : t) * 8 * (i % 3 + 1)) % W)), y = 139 + (i * 13) % 38; R(g, "rgba(255,255,255,0.32)", x, y, 6, 1); }
+  }
+  function drawRealmBoat(t) {
+    if (!PRESENT || !((realm.name === "mc" && realm.p > 0.45) || (realm.under === "mc" && realm.p < 0.5))) return;
+    const cx = 194 + Math.round(ride.dx), y = 134 + rideBob(), x0 = cx - 28;
+    R(ctx, "#0a0a14", x0 - 3, y - 5, 7, 7); R(ctx, "#0a0a14", x0 + 52, y - 5, 7, 7); R(ctx, "#0a0a14", x0 - 1, y - 1, 58, 12);
+    R(ctx, "#a8702f", x0 - 2, y - 4, 5, 5); R(ctx, "#a8702f", x0 + 53, y - 4, 5, 5);
+    R(ctx, "#8a5a30", x0, y, 56, 8); R(ctx, "#a8702f", x0, y, 56, 2); R(ctx, "#6b4423", x0, y + 4, 56, 1); R(ctx, "#6b4423", x0 + 4, y + 8, 48, 2);
+    for (let i = 8; i < 56; i += 8) R(ctx, "#6b4423", x0 + i, y + 2, 1, 6);
+    R(ctx, "rgba(75,134,234,0.85)", x0 - 2, y + 8, 60, 3); R(ctx, "rgba(255,255,255,0.5)", x0 + ((Math.floor(t * 3) % 3) * 6), y + 9, 8, 1);
   }
   function skyStatic() {
     if (realmCache.sky) return realmCache.sky;
@@ -927,15 +947,20 @@
     for (let j = 0; j < 7; j++) R(g, "rgba(190,240,255,0.75)", 72, 108 + Math.round(((j * 7 + (reduce ? 0 : t) * 30) % 42)), 2, 3);
     for (let i = 0; i < 14; i++) { const x = (i * 53 + t * 6) % W, y = 40 + ((i * 37) % 90) + Math.sin(t + i) * 3; R(g, "rgba(255,240,170,0.8)", Math.round(x), Math.round(y), 1, 1); }
   }
+  const paintRealm = (name, g, t) => (name === "mc" ? paintMc : paintSky)(g, t);
+  /* the new world appears block by block, spreading out from Filippo */
   function drawRealm(t) {
     if (!PRESENT || realm.p <= 0 || !realm.name) return;
+    if (realm.under) paintRealm(realm.under, ctx, t);
     rg.clearRect(0, 0, W, H);
-    (realm.name === "mc" ? paintMc : paintSky)(rg, t);
-    const p = ease(realm.p), cx = Math.round(player.x), cy = Math.round(FOOT - 30 + flyY);
+    paintRealm(realm.name, rg, t);
+    const p = ease(realm.p), cx = Math.round(player.x), cy = Math.round(footY() - 30);
     if (p >= 1) { ctx.drawImage(realmCv, 0, 0); return; }
-    const rmax = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) + 4, rad = p * rmax;
-    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(realmCv, 0, 0); ctx.restore();
-    ctx.strokeStyle = "rgba(255,255,255," + (0.8 * (1 - p)) + ")"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
+    const rmax = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) + 4;
+    for (let ty = 0; ty < 23; ty++) for (let tx = 0; tx < 40; tx++) {
+      const d = Math.hypot(tx * 8 + 4 - cx, ty * 8 + 4 - cy) / rmax;
+      if (0.55 * d + 0.45 * tileNoise[ty * 40 + tx] <= p) ctx.drawImage(realmCv, tx * 8, ty * 8, 8, 8, tx * 8, ty * 8, 8, 8);
+    }
   }
   function drawRealmFront(t) {
     if (!PRESENT || realm.name !== "sky" || realm.p < 0.6) return;
@@ -943,6 +968,20 @@
     puff(ctx, Math.round(((60 - (reduce ? 0 : t) * 9) % (W + 120) + W + 120) % (W + 120)) - 60, 156, 2, "#fff0f8", "#e8c8e8");
     puff(ctx, Math.round(((240 - (reduce ? 0 : t) * 6) % (W + 120) + W + 120) % (W + 120)) - 60, 168, 2.4, "#fff0f8", "#e8c8e8");
     ctx.globalAlpha = 1;
+  }
+  /* jetpack on his back, with flames when he flies */
+  function drawJetpack(t) {
+    if (!PRESENT || !fxs.jet) return;
+    const px = Math.round(player.x), top = footY() - 34, thrust = fxs.boost || realm.name === "sky";
+    R(ctx, "#6b7388", px - 12, top + 4, 24, 4);
+    [px - 17, px + 12].forEach((x) => {
+      R(ctx, "#0a0a14", x - 1, top - 1, 7, 19); R(ctx, "#aeb7c9", x, top, 5, 17); R(ctx, "#dbe2ee", x, top, 1, 17); R(ctx, "#e5484d", x, top, 5, 4); R(ctx, "#3b4258", x + 1, top + 17, 3, 3);
+      if (thrust) {
+        const fl = reduce ? 1 : Math.floor(t * 14) % 3;
+        R(ctx, "#ff7a2e", x + 1, top + 20, 3, 5 + fl); R(ctx, "#ffd34d", x + 2, top + 20, 1, 3 + fl); glow(ctx, x + 2, top + 23, 9, "255,150,60", 0.55);
+        if (tick % 2 === 0) addPart({ x: x + 2, y: top + 24, vx: (Math.random() - 0.5) * 0.4, vy: 0.5 + Math.random() * 0.5, life: 22, kind: "bit", col: Math.random() > 0.5 ? "#ff9d3a" : "#cfd6e4" });
+      }
+    });
   }
   function drawPick(hx, hy, dir, f) {
     if (f === 0) { line("#6b4423", hx, hy, hx + 7 * dir, hy - 9); R(ctx, "#0a0a14", hx + 7 * dir - 3, hy - 11, 7, 4); R(ctx, "#cfd6e4", hx + 7 * dir - 2, hy - 10, 5, 2); }
@@ -1061,9 +1100,14 @@
       every("v", e, 0.5, (i) => addPart({ x: px + (Math.random() * 40 - 20), y: FOOT - 46, vx: (Math.random() - 0.5) * 0.3, vy: -0.4, life: 50, kind: "glyph", ch: "ABC"[i % 3], col: "#6ee7d8" }));
     }
     if (n === "quest") {
-      once("h", e > 0.05, () => hop(-2.6));
-      if (PRESENT) once("go", e > 0.35, () => { if (realm.name !== "sky" || realm.p < 1) { realmGo("sky"); jingle([523, 659, 784, 1046, 1318]); burst(px, FOOT - 30, 14, "#ffe08a"); } });
-      ["#ffd34d", "#ffd34d", "#ffd34d"].forEach((c, i) => { const a = e * 2 + i * 2.1; R(ctx, c, Math.round(px + Math.cos(a) * 18), Math.round(FOOT - 56 + flyY + Math.sin(a) * 5), 2, 2); });
+      if (!PRESENT) {
+        once("h", e > 0.05, () => hop(-2));
+        ["#ffd34d", "#ffd34d", "#ffd34d"].forEach((c, i) => { const a = e * 2 + i * 2.1; R(ctx, c, Math.round(px + Math.cos(a) * 18), Math.round(FOOT - 56 + Math.sin(a) * 5), 2, 2); });
+      } else {
+        once("rig", e > 0.3, () => { fxs.jet = true; jingle([330, 440, 554]); burst(px, footY() - 24, 10, "#cfd6e4", "spark"); });
+        once("lift", e > 1.1, () => { ride.on = false; fxs.boost = true; jingle([262, 330, 392, 523, 659]); });
+        once("go", e > 3.4, () => { if (realm.name !== "sky") { realmGo("sky", realm.name === "mc" ? "mc" : null); jingle([523, 659, 784, 1046, 1318]); burst(px, footY() - 30, 14, "#ffe08a"); } });
+      }
     }
 
     if (n === "book1" || n === "book2") {
@@ -1093,19 +1137,12 @@
       once("fw", true, () => { fwUntil = nowT + 3600; fwNext = nowT + 0.2; });
     }
     if (n === "mc" && PRESENT) {
-      once("jump", e > 0.15, () => hop(-2.8));
-      once("go", e > 0.5, () => { if (realm.name !== "mc" || realm.p < 1) { realmGo("mc"); jingle([392, 523, 659, 784, 1046]); burst(px, FOOT - 30, 14, "#9be07a"); } pm.done = true; });
-      if (realm.name === "mc" && realm.p >= 1) {
-        const em = e - 1.6, f = Math.floor(e / 0.22) % 2, hx = px - 8, hyy = FOOT - 20 + hy;
-        drawPick(hx, hyy, -1, f);
-        const bxx = px - 24, byy = FOOT - 8, st = Math.max(0, Math.floor((em % 1.8) / 0.45));
-        if (em > 0) {
-          drawMcStone(bxx, byy); R(ctx, "#6ee7d8", bxx + 1, byy + 1, 2, 2); R(ctx, "#6ee7d8", bxx + 3, byy + 3, 2, 2);
-          for (let k = 0; k < st; k++) R(ctx, "#0a0a14", bxx + 1 + k, byy + 1 + k, 1, 3);
-          every("brk", em, 1.8, () => { for (let i = 0; i < 8; i++) addPart({ x: bxx + 3, y: byy + 3, vx: (Math.random() - 0.7) * 1.2, vy: -0.8 - Math.random() * 0.8, g: 0.05, life: 30, kind: "bit", col: i % 2 ? "#8d93a3" : "#6ee7d8" }); jingle([784, 988, 1318]); });
-        }
-        every("sw", e, 0.22, (i) => { if (i % 2 === 1) { burst(hx - 8, hyy + 2, 3, "#ffe08a", "spark"); blip(220, 0.04, 0.025); } });
-      }
+      once("jump", e > 0.2, () => hop(-2.8));
+      once("board", e > 0.6, () => { ride.on = true; });
+      once("land", e > 0.95, () => { burst(px, 136, 8, "#cfe9ff", "spark"); blip(300, 0.06, 0.03); });
+      once("sail", e > 1.4, () => { ride.target = 24; jingle([392, 440, 523]); });
+      once("go", e > 2.0, () => { if (realm.name !== "mc" || realm.p < 1) { realmGo("mc"); jingle([392, 523, 659, 784, 1046]); } pm.done = true; });
+      if (ride.on && Math.abs(ride.dx - ride.target) > 0.3) every("wake", e, 0.12, () => addPart({ x: 194 + ride.dx - 30, y: 141, vx: -0.15, vy: -0.05, life: 22, kind: "bit", col: "#e8f4ff" }));
     }
     if (n === "mc" && !PRESENT) {
       const f = Math.floor(e / 0.22) % 2, hx = px + 8, hyy = FOOT - 20 + hy;
@@ -1535,7 +1572,7 @@
     glow(ctx, 269, 112, 14, "255,200,100", 0.5);
     if (mailbox.flag) { R(ctx, "#0a0a14", 229, 98, 3, 10); R(ctx, "#ffd36b", 230, 99, 1, 8); R(ctx, "#0a0a14", 227, 98, 6, 5); R(ctx, "#ffc857", 228, 99, 4, 3); }
     drawDoorOpen(t);
-    drawWorld(t); if (!PRESENT) drawFinishSign(t); drawDawn(); drawRealm(t);
+    drawWorld(t); if (!PRESENT) drawFinishSign(t); drawDawn(); drawRealm(t); drawRealmBoat(t);
 
     // stelle
     STARS.forEach((s) => {
@@ -1548,7 +1585,7 @@
     // segnaposto dei luoghi
     HOTSPOTS.forEach((h) => { if (PRESENT || h.hide || (h.show && !h.show())) return; drawMarker(h.mx, h.my, game.places.has(h.id) || !!(h.done && h.done()), t, h.n); });
 
-    fxBack(t);
+    fxBack(t); drawJetpack(t);
 
     // personaggio
     const typing = act && act.state === "do" && (act.name === "web" || act.name === "git");
@@ -1556,13 +1593,13 @@
     const walkStep = player.moving ? (Math.floor(tick / 5) % 2) + 1 : 0;
     const bob = player.moving ? (Math.floor(tick / 5) % 2) : typing ? (Math.floor(tick / 3) % 2) : mining ? (Math.floor((t - act.t0) / 0.22) % 2) : reduce ? 0 : (Math.floor(t * 1.6) % 2);
     drawSprite(bob, walkStep, (t % 4.2) > 4.05);
-    const px = Math.round(player.x), py = Math.round(FOOT + player.hy + flyY);
-    if (flyY > -3) { ctx.fillStyle = "rgba(0,0,10,0.32)"; ctx.fillRect(px - 9, FOOT - 2, 18, 2); ctx.fillRect(px - 6, FOOT - 3, 12, 1); }
-    else if (tick % 3 === 0) addPart({ x: px + Math.random() * 10 - 5, y: py - 4, vy: 0.25, life: 30, kind: "star", col: Math.random() > 0.5 ? "#ffe08a" : "#ffc2e0" });
+    const px = Math.round(player.x), py = footY();
+    if (flyY > -3 && !ride.on) { ctx.fillStyle = "rgba(0,0,10,0.32)"; ctx.fillRect(px - 9, FOOT - 2, 18, 2); ctx.fillRect(px - 6, FOOT - 3, 12, 1); }
+    else if (tick % 3 === 0 && !fxs.jet) addPart({ x: px + Math.random() * 10 - 5, y: py - 4, vy: 0.25, life: 30, kind: "star", col: Math.random() > 0.5 ? "#ffe08a" : "#ffc2e0" });
     ctx.save(); ctx.translate(px, py - 44);
     if (player.dir < 0) ctx.scale(-1, 1);
     ctx.drawImage(sp, -15, 0); ctx.restore();
-    glow(ctx, px, FOOT - 20 + flyY, 22, "255,200,110", 0.18 * lf);
+    glow(ctx, px, py - 20, 22, "255,200,110", 0.18 * lf);
 
     if (!blocked()) {
       const ob = reduce ? 0 : Math.round(Math.sin(t * 5) * 2);
@@ -1726,7 +1763,13 @@
     if (sl.say) SAYS[sl.act] = sl.say;
     const mi = SLIDES.findIndex((x) => x.act === "mc");
     if (current < mi) mcReset(); else if (current > mi && !pm.done) mcInstant();
-    if (sl.act !== "mc" && sl.act !== "quest") realmGo(null); else if (realm.name && !(sl.act === realm.name || (sl.act === "quest" && realm.name === "sky"))) realmGo(null);
+    if (sl.act !== "mc" && sl.act !== "quest") { realmGo(null); fxs.boost = false; fxs.jet = false; ride.on = false; ride.target = 0; }
+    else if (sl.act === "mc") {
+      fxs.boost = false; fxs.jet = false;
+      if (realm.name !== "mc") { if (realm.name) realmGo(null); ride.on = false; ride.dx = 0; ride.target = 0; }
+    } else if (realm.name !== "mc" && realm.name !== "sky") { // jumped straight to the last slide: start already in the Minecraft world, on the boat
+      realm.name = "mc"; realm.under = null; realm.p = 1; realm.dir = 0; ride.on = true; ride.dx = 24; ride.target = 24; player.x = RIDE_X0 + 24; player.target = null;
+    }
     perform(sl.act, { hold: true, restart: true });
   }
   let current = 0;

@@ -651,3 +651,6 @@ body.pm-end .ui, body.pm-end #bubble, body.pm-end #pmLink { opacity: 0 !importan
 body.present .who { display: none; }
 body.present .pm-clock { display: inline; font-family: "Press Start 2P", monospace; font-size: 11px; letter-spacing: .5px; }
 body.present .hud .js-mot { display: none !important; }
+
+/* start screen: only the name and the buttons */
+.intro-card .fin-tag, .intro-line, .intro-how { display: none; }

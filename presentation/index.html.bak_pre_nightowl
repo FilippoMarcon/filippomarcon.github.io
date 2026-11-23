@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Filippo Marcon · Press Start</title>
+  <meta name="description" content="Filippo Marcon's interactive 2D pixel-art game: explore the pier, collect stars, find secrets and get to know me.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Pixelify+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="scene" aria-label="Pixel-art scene: a night-time pier where Filippo reacts to everything you open"></canvas>
+  <div class="vignette"></div>
+  <div id="bubble" role="status" aria-live="polite"></div>
+  <div id="pmEnd" aria-hidden="true">
+    <div class="end-bar top"></div><div class="end-bar bot"></div>
+    <div class="end-txt"><h1 class="e1">THANK YOU</h1><h2 class="e2">FOR LISTENING!</h2><p class="e3">Filippo Marcon</p><p class="e4">Any questions?</p></div>
+  </div>
+  <div id="prompt"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <div id="banner" role="status" aria-live="polite"></div>
+  <div id="guide" role="status" aria-live="polite"><span id="guideStep" class="g-step">STEP 1/10</span><span id="guideText" class="g-text"></span></div>
+
+  <div class="ui">
+    <header class="hud">
+      <span class="who">LV.19 &nbsp;FILIPPO</span>
+      <div class="xp" aria-label="Visitor progress">
+        <span id="lv">LV.1</span>
+        <div class="xpbar" id="xpbar" aria-hidden="true"></div>
+        <span id="xpnum">0 XP</span>
+        <span id="starnum" class="starnum">★ 0/6</span>
+        <span id="pmProgress" class="pm-progress" aria-label="Section">1/9</span>
+      </div>
+      <div class="ctrls">
+        <a id="pmLink" class="snd pm-link" href="?present=1">▶ PRESENTATION MODE</a>
+        <a id="pmExit" class="snd pm-link" href="./">EXIT PRESENTATION</a>
+        <button type="button" class="snd js-mot" aria-pressed="false" aria-label="Reduce animations">MOTION: FULL</button>
+        <label class="vol"><span>VOL</span><input type="range" class="js-vol" min="0" max="100" value="60" aria-label="Volume"></label>
+        <button type="button" id="snd" class="snd js-snd" aria-pressed="true">SOUND: ON</button>
+      </div>
+    </header>
+
+    <section class="left">
+      <h1 class="logo"><span class="l1">Filippo</span><span class="l2">Marcon</span></h1>
+      <p class="tagline">Computer science student · maker of things</p>
+
+      <nav id="menu" aria-label="Main menu">
+        <button type="button" data-panel="profile" class="sel">Profile</button>
+        <button type="button" data-panel="skills">Skills</button>
+        <button type="button" data-panel="about" class="pm-hide">About me</button>
+        <button type="button" data-panel="about" class="pm-only">The Beginning</button>
+        <button type="button" data-panel="about" class="pm-only">Creating Things</button>
+        <button type="button" data-panel="links" class="pm-only">Web projects</button>
+        <button type="button" data-panel="links" class="pm-only">3:17</button>
+        <button type="button" data-panel="links" class="pm-only">Diary</button>
+        <button type="button" data-panel="links" class="pm-only">Minecraft</button>
+        <button type="button" data-panel="about" class="pm-only">The Future</button>
+      </nav>
+
+      <div class="window" id="window">
+        <!-- PROFILE -->
+        <article class="panel active" id="p-profile">
+          <h2>Profile</h2>
+          <dl>
+            <dt>Player</dt><dd>Filippo Marcon · 19 · Caorle, Italy</dd>
+            <dt>Class</dt><dd>Computer science student</dd>
+            <dt>Mission</dt><dd>Become a Full Stack Developer</dd>
+            <dt>Three words</dt>
+            <dd><ul class="chips gold"><li>Curious</li><li>Creative</li><li>Night owl</li></ul></dd>
+            <dt>Personal bug</dt>
+            <dd class="bug">“I start a project out of curiosity and end up spending the whole night on it.”</dd>
+          </dl>
+        </article>
+
+        <!-- SKILLS -->
+        <article class="panel" id="p-skills">
+          <h2>Skills</h2>
+          <div id="stats" class="stats"></div>
+          <h3>Perks</h3>
+          <ul class="chips gold"><li>Night Owl</li><li>Keyboard Warrior</li><li>Published Author</li></ul>
+          <p class="note">Rough estimates.</p>
+        </article>
+
+        <!-- ABOUT -->
+        <article class="panel" id="p-about">
+          <h2>About me</h2>
+          <div class="chaps" id="chapTabs" role="tablist" aria-label="Story chapters"></div>
+          <div class="story" id="chapText" role="tabpanel" aria-live="polite"></div>
+        </article>
+
+        <!-- INVENTORY -->
+        <article class="panel" id="p-inventory">
+          <h2>Inventory</h2>
+          <h3>Equipped</h3>
+          <ul class="items">
+            <li data-act="web" tabindex="0"><canvas class="icon" data-icon="laptop" width="8" height="8"></canvas><div><b>Laptop</b><small>Where my projects are born</small></div></li>
+            <li class="link"><a href="https://github.com/FilippoMarcon" target="_blank" rel="noopener" data-act="git"><canvas class="icon" data-icon="code" width="8" height="8"></canvas><div><b>GitHub</b><small>github.com/FilippoMarcon ↗</small></div></a></li>
+          </ul>
+          <h3>Collected <b id="icount" class="cnt">0/4</b></h3>
+          <ul class="items" id="collected"></ul>
+        </article>
+
+        <!-- FUN FACTS -->
+        <article class="panel" id="p-facts">
+          <h2>Fun facts</h2>
+          <p class="note top">Talk to Filippo to unlock facts about him. <b id="found">0/3</b> found.</p>
+          <ul class="facts" id="factList"></ul>
+          <button type="button" id="btn" class="action">▶ Talk to Filippo</button>
+        </article>
+
+        <!-- QUIZ -->
+        <article class="panel" id="p-quiz">
+          <h2>How well do you know me?</h2>
+          <div id="quizBox"></div>
+        </article>
+
+        <!-- TECH WORDS -->
+        <article class="panel" id="p-vocab">
+          <h2>Tech words</h2>
+          <p class="note top">English words I use when I code. Open them all! <b id="vfound"></b></p>
+          <div id="vocabBox" class="vocab"></div>
+        </article>
+
+        <!-- QUICK LINKS (presentation mode) -->
+        <article class="panel" id="p-links">
+          <h2>Quick links</h2>
+          <p class="note top">Click a card to preview it.</p>
+          <div id="linksHost"></div>
+        </article>
+
+        <!-- QUEST LOG -->
+        <article class="panel" id="p-quest">
+          <h2>Your route</h2>
+          <h3>Start → Finish <b id="qfound" class="cnt">0/10</b></h3>
+          <p class="note top">Visit the stops from left to right. The last one is the house.</p>
+          <ul class="qlog" id="qlog"></ul>
+          <h3>Bonus · optional <b id="bfound" class="cnt">0/9</b></h3>
+          <p class="note top">Optional extras hidden on the pier. You do not need them to finish.</p>
+          <ul class="qlog" id="bonuslog"></ul>
+          <h3>Badges <b id="badgeFound" class="cnt">0/5</b></h3>
+          <ul class="badges" id="badgeList"></ul>
+        </article>
+      </div>
+    </section>
+
+    <aside class="status" aria-label="Player status">
+      <div class="st-head"><span>PLAYER 1</span><span class="online">● ONLINE</span></div>
+      <p class="st-name">Filippo Marcon</p>
+      <p class="st-sub">Computer science student<br>Caorle, Italy</p>
+      <div class="st-badges" id="stBadges"></div>
+      <a class="gh" href="https://github.com/FilippoMarcon" target="_blank" rel="noopener" data-act="git">GitHub ↗</a>
+    </aside>
+
+    <section class="board" aria-label="Quest board">
+      <h2 class="board-title">Quick links · hover to preview</h2>
+      <div class="cards">
+        <button type="button" class="card" data-act="web">
+          <canvas class="icon" data-icon="laptop" width="8" height="8"></canvas>
+          <span class="t">Web projects</span><span class="s">Sites &amp; experiments with new tech</span>
+        </button>
+        <button type="button" class="card" data-act="book1">
+          <canvas class="icon" data-icon="book" width="8" height="8"></canvas>
+          <span class="t">3:17</span><span class="s">Book · mind, memory &amp; free will</span>
+        </button>
+        <button type="button" class="card" data-act="book2">
+          <canvas class="icon" data-icon="book2" width="8" height="8"></canvas>
+          <span class="t">Diary of a Content Creator</span><span class="s">Book · young-adult novel</span>
+        </button>
+        <button type="button" class="card" data-act="mc">
+          <canvas class="icon" data-icon="block" width="8" height="8"></canvas>
+          <span class="t">Minecraft server</span><span class="s">Gaming projects</span>
+        </button>
+      </div>
+    </section>
+
+    <div class="controls" aria-label="Touch controls">
+      <button type="button" id="goLeft" aria-label="Walk left">◀</button>
+      <button type="button" id="goJump" aria-label="Jump">▲</button>
+      <button type="button" id="goAct" aria-label="Interact">A</button>
+      <button type="button" id="goRight" aria-label="Walk right">▶</button>
+    </div>
+  </div>
+
+  <div id="finale" class="finale" hidden role="dialog" aria-modal="true" aria-labelledby="finTitle">
+    <div class="finale-card">
+      <p class="fin-tag" id="finTag">FINAL ACHIEVEMENT · QUEST MASTER</p>
+      <h2 id="finTitle">QUEST COMPLETED!</h2>
+      <p class="fin-msg">Thanks for playing!<br>I'm Filippo Marcon.<br>This is just the beginning of my journey.</p>
+      <p class="fin-secret" id="finSecret" hidden></p>
+      <p class="fin-stats" id="finStats"></p>
+      <button type="button" id="finClose" class="action">▶ Keep exploring</button>
+    </div>
+  </div>
+
+  <div id="modal" class="modal" hidden>
+    <div class="mwin" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <div class="mhead"><h2 id="mTitle"></h2><button type="button" class="mclose" id="mClose" data-close aria-label="Close">✕</button></div>
+      <div id="mBody" class="mbody"></div>
+    </div>
+  </div>
+
+  <div id="intro" class="intro" hidden role="dialog" aria-modal="true" aria-labelledby="introTitle">
+    <div class="intro-card">
+      <p class="fin-tag">PRESS START</p>
+      <p class="intro-title" id="introTitle">Filippo<br><span>Marcon</span></p>
+      <p class="intro-line" id="introText" aria-live="off"></p>
+      <p class="intro-how"><b>How to play</b><br>You start on the <em>left</em> of the pier. Follow the golden arrow <em>▶</em> and the guide bar to the house on the <em>right</em>: that is the finish.<br><span>ARROWS / A D walk · SPACE jump · E interact</span></p>
+      <div class="intro-btns">
+        <button type="button" id="introStart" class="action">▶ Press start</button>
+        <button type="button" id="introSkip" class="action ghost">Skip intro</button>
+      </div>
+      <div class="intro-opts">
+        <a class="snd pm-link" href="?present=1">▶ PRESENTATION MODE</a>
+        <button type="button" class="snd js-mot" aria-pressed="false" aria-label="Reduce animations">MOTION: FULL</button>
+        <label class="vol"><span>VOL</span><input type="range" class="js-vol" min="0" max="100" value="60" aria-label="Volume"></label>
+        <button type="button" class="snd js-snd" aria-pressed="true">SOUND: ON</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

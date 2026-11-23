@@ -357,7 +357,7 @@
   const CONTENT = {
     intro: [
       "A quiet night in Caorle, Italy…",
-      "A student. A maker. A night owl.",
+      "A student. A maker. A curious mind.",
       "Start on the left. Follow the arrow to the right."
     ],
     chapters: [
@@ -386,8 +386,8 @@
         text: "I'm curious about new technologies. When I find a new tool, I like to try it in a small web project first, just to see how it works." }
     },
     npcs: {
-      owl: { name: "Night Owl", sprite: "owl",
-        start: "Hoo! I'm the Night Owl. I know all about Filippo's studies. What do you want to know?",
+      owl: { name: "Wise Owl", sprite: "owl",
+        start: "Hoo! I'm the Wise Owl. I know all about Filippo's studies. What do you want to know?",
         options: [
           { q: "What does he study?", a: "He studies computer science. He loves learning how software and websites work." },
           { q: "What are his main skills?", a: "HTML and CSS are his strongest skills, then JavaScript, Git and PHP. SQL and Python are still growing." },

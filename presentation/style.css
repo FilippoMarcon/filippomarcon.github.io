@@ -607,7 +607,7 @@ body.present .pm-progress { display: block; font-family: "Press Start 2P", monos
 
 /* nothing game-like on screen */
 body.present #guide, body.present #toast, body.present #banner, body.present #prompt, body.present #finale,
-body.present .controls, body.present .st-badges, body.present .cnt, body.present #btn,
+body.present .status, body.present .controls, body.present .st-badges, body.present .cnt, body.present #btn,
 body.present #p-facts .note.top, body.present #p-vocab .note.top, body.present #p-quest #qlog ~ * { display: none !important; }
 
 /* bigger text for a projector */

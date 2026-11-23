@@ -511,7 +511,7 @@
     mc: "Server online. Come play!",
     bye: "Thank you!",
     git: "git push origin main",
-    profile: "Hi! I'm Filippo.",
+    profile: "I start a project and work on it all night. I don't notice it's late, so I forget to stop!",
     stats: "I like making websites and more. I sleep little, but I keep my resistance up!",
     inventory: "Let me check my bag…",
     facts: "Ask away! Well, press the button.",

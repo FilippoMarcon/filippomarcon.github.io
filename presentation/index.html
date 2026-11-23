@@ -14,14 +14,9 @@
   <canvas id="scene" aria-label="Pixel-art scene: a night-time pier where Filippo reacts to everything you open"></canvas>
   <div class="vignette"></div>
   <div id="bubble" role="status" aria-live="polite"></div>
-  <div id="pmEnd" aria-hidden="true">
-    <div class="end-bar top"></div><div class="end-bar bot"></div>
-    <div class="end-txt"><h1 class="e1">THANK YOU</h1><h2 class="e2">FOR LISTENING!</h2><p class="e3">Filippo Marcon</p><p class="e4">Any questions?</p></div>
-  </div>
   <div id="prompt"></div>
   <div id="toast" role="status" aria-live="polite"></div>
   <div id="banner" role="status" aria-live="polite"></div>
-  <div id="guide" role="status" aria-live="polite"><span id="guideStep" class="g-step">STEP 1/10</span><span id="guideText" class="g-text"></span></div>
 
   <div class="ui">
     <header class="hud">
@@ -31,11 +26,8 @@
         <div class="xpbar" id="xpbar" aria-hidden="true"></div>
         <span id="xpnum">0 XP</span>
         <span id="starnum" class="starnum">★ 0/6</span>
-        <span id="pmProgress" class="pm-progress" aria-label="Section">1/9</span>
       </div>
       <div class="ctrls">
-        <a id="pmLink" class="snd pm-link" href="?present=1">▶ PRESENTATION MODE</a>
-        <a id="pmExit" class="snd pm-link" href="./">EXIT PRESENTATION</a>
         <button type="button" class="snd js-mot" aria-pressed="false" aria-label="Reduce animations">MOTION: FULL</button>
         <label class="vol"><span>VOL</span><input type="range" class="js-vol" min="0" max="100" value="60" aria-label="Volume"></label>
         <button type="button" id="snd" class="snd js-snd" aria-pressed="true">SOUND: ON</button>
@@ -49,14 +41,12 @@
       <nav id="menu" aria-label="Main menu">
         <button type="button" data-panel="profile" class="sel">Profile</button>
         <button type="button" data-panel="skills">Skills</button>
-        <button type="button" data-panel="about" class="pm-hide">About me</button>
-        <button type="button" data-panel="about" class="pm-only">The Beginning</button>
-        <button type="button" data-panel="about" class="pm-only">Creating Things</button>
-        <button type="button" data-panel="links" class="pm-only">Web projects</button>
-        <button type="button" data-panel="links" class="pm-only">3:17</button>
-        <button type="button" data-panel="links" class="pm-only">Diary</button>
-        <button type="button" data-panel="links" class="pm-only">Minecraft</button>
-        <button type="button" data-panel="about" class="pm-only">The Future</button>
+        <button type="button" data-panel="about">About me</button>
+        <button type="button" data-panel="inventory">Inventory</button>
+        <button type="button" data-panel="facts">Fun facts</button>
+        <button type="button" data-panel="quiz">Quiz</button>
+        <button type="button" data-panel="vocab">Tech words</button>
+        <button type="button" data-panel="quest">Quest log</button>
       </nav>
 
       <div class="window" id="window">
@@ -68,7 +58,7 @@
             <dt>Class</dt><dd>Computer science student</dd>
             <dt>Mission</dt><dd>Become a Full Stack Developer</dd>
             <dt>Three words</dt>
-            <dd><ul class="chips gold"><li>Curious</li><li>Creative</li><li>Night owl</li></ul></dd>
+            <dd><ul class="chips gold"><li>Curious</li><li>Creative</li><li>Maker</li></ul></dd>
             <dt>Personal bug</dt>
             <dd class="bug">“I start a project out of curiosity and end up spending the whole night on it.”</dd>
           </dl>
@@ -79,7 +69,7 @@
           <h2>Skills</h2>
           <div id="stats" class="stats"></div>
           <h3>Perks</h3>
-          <ul class="chips gold"><li>Night Owl</li><li>Keyboard Warrior</li><li>Published Author</li></ul>
+          <ul class="chips gold"><li>Published Author</li><li>Server Admin</li></ul>
           <p class="note">Rough estimates.</p>
         </article>
 
@@ -123,21 +113,14 @@
           <div id="vocabBox" class="vocab"></div>
         </article>
 
-        <!-- QUICK LINKS (presentation mode) -->
-        <article class="panel" id="p-links">
-          <h2>Quick links</h2>
-          <p class="note top">Click a card to preview it.</p>
-          <div id="linksHost"></div>
-        </article>
-
         <!-- QUEST LOG -->
         <article class="panel" id="p-quest">
-          <h2>Your route</h2>
-          <h3>Start → Finish <b id="qfound" class="cnt">0/10</b></h3>
-          <p class="note top">Visit the stops from left to right. The last one is the house.</p>
+          <h2>Quest log</h2>
+          <h3>Main quests <b id="qfound" class="cnt">0/9</b></h3>
+          <p class="note top">Finish these to complete the game.</p>
           <ul class="qlog" id="qlog"></ul>
           <h3>Bonus · optional <b id="bfound" class="cnt">0/9</b></h3>
-          <p class="note top">Optional extras hidden on the pier. You do not need them to finish.</p>
+          <p class="note top">Explore the pier for secrets. Not needed to finish.</p>
           <ul class="qlog" id="bonuslog"></ul>
           <h3>Badges <b id="badgeFound" class="cnt">0/5</b></h3>
           <ul class="badges" id="badgeList"></ul>
@@ -154,7 +137,7 @@
     </aside>
 
     <section class="board" aria-label="Quest board">
-      <h2 class="board-title">Quick links · hover to preview</h2>
+      <h2 class="board-title">Quest board · hover a quest</h2>
       <div class="cards">
         <button type="button" class="card" data-act="web">
           <canvas class="icon" data-icon="laptop" width="8" height="8"></canvas>
@@ -206,13 +189,11 @@
       <p class="fin-tag">PRESS START</p>
       <p class="intro-title" id="introTitle">Filippo<br><span>Marcon</span></p>
       <p class="intro-line" id="introText" aria-live="off"></p>
-      <p class="intro-how"><b>How to play</b><br>You start on the <em>left</em> of the pier. Follow the golden arrow <em>▶</em> and the guide bar to the house on the <em>right</em>: that is the finish.<br><span>ARROWS / A D walk · SPACE jump · E interact</span></p>
       <div class="intro-btns">
         <button type="button" id="introStart" class="action">▶ Press start</button>
         <button type="button" id="introSkip" class="action ghost">Skip intro</button>
       </div>
       <div class="intro-opts">
-        <a class="snd pm-link" href="?present=1">▶ PRESENTATION MODE</a>
         <button type="button" class="snd js-mot" aria-pressed="false" aria-label="Reduce animations">MOTION: FULL</button>
         <label class="vol"><span>VOL</span><input type="range" class="js-vol" min="0" max="100" value="60" aria-label="Volume"></label>
         <button type="button" class="snd js-snd" aria-pressed="true">SOUND: ON</button>

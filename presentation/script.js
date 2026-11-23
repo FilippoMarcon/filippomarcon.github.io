@@ -1,10 +1,4 @@
 (() => {
-  /* ================= PRESENTATION MODE: ?present=1 =================
-     Linear slides, everything unlocked, no game counters. Without the
-     parameter the game works exactly as before. */
-  const PRESENT = (() => { try { const q = new URLSearchParams(location.search); return q.has("present") && !["0", "false", "no", "off"].includes((q.get("present") || "").toLowerCase()); } catch (e) { return false; } })();
-  if (PRESENT) document.body.classList.add("present");
-
   /* ================= SCENA PIXEL ART (320x180) ================= */
   const W = 320, H = 180, HOR = 100;
   const cv = document.getElementById("scene");
@@ -334,11 +328,6 @@
   const GLYPHS = {
     "?": ["111", "001", "011", "000", "010"], "!": ["010", "010", "010", "000", "010"],
     A: ["010", "101", "111", "101", "101"], B: ["110", "101", "110", "101", "110"], C: ["011", "100", "100", "100", "011"],
-    S: ["011", "100", "010", "001", "110"], T: ["111", "010", "010", "010", "010"], R: ["110", "101", "110", "101", "101"],
-    F: ["111", "100", "110", "100", "100"], I: ["111", "010", "010", "010", "111"], N: ["101", "111", "111", "101", "101"],
-    H: ["101", "101", "111", "101", "101"], 2: ["110", "001", "010", "100", "111"], 3: ["110", "001", "010", "001", "110"],
-    4: ["101", "101", "111", "001", "001"], L: ["100", "100", "100", "100", "111"], O: ["111", "101", "101", "101", "111"],
-    K: ["101", "101", "110", "101", "101"], E: ["111", "100", "110", "100", "111"], D: ["110", "101", "101", "101", "110"],
     0: ["111", "101", "101", "101", "111"], 1: ["010", "110", "010", "010", "111"], "{": ["011", "010", "110", "010", "011"], "}": ["110", "010", "011", "010", "110"]
   };
 
@@ -357,8 +346,8 @@
   const CONTENT = {
     intro: [
       "A quiet night in Caorle, Italy…",
-      "A student. A maker. A night owl.",
-      "Start on the left. Follow the arrow to the right."
+      "A student. A maker. A curious mind.",
+      "Welcome to my world. Let's play!"
     ],
     chapters: [
       { title: "The Beginning", text: [ // EDIT ME: tell the real story (when and how it started)
@@ -386,23 +375,22 @@
         text: "I'm curious about new technologies. When I find a new tool, I like to try it in a small web project first, just to see how it works." }
     },
     npcs: {
-      owl: { name: "Night Owl", sprite: "owl",
-        start: "Hoo! I'm the Night Owl. I know all about Filippo's studies. What do you want to know?",
+      owl: { name: "Wise Owl", sprite: "owl",
+        start: "Hoo! I'm the Wise Owl. I know all about Filippo's studies. What do you want to know?",
         options: [
           { q: "What does he study?", a: "He studies computer science. He loves learning how software and websites work." },
           { q: "What are his main skills?", a: "HTML and CSS are his strongest skills, then JavaScript, Git and PHP. SQL and Python are still growing." },
           { q: "Does he sleep at night?", a: "Not always! His “sleep resistance” is 90%. When a project is exciting, he forgets the time." }
         ],
         bye: "Come back any time. Hoo-hoo!" },
-      captain: { name: "Captain Pixel", sprite: "captain",
-        start: "Ahoy, traveller! Welcome to Filippo's pier. Walk right and visit the stops. The last one is his house!",
+      captain: { name: "Old Fisherman", sprite: "captain",
+        start: "Ahoy! I fish at this pier and I watch the horizon. Ask me about Filippo's future.",
         options: [
-          { q: "How does this game work?", a: "Follow the golden arrow and the bar at the top. Visit the three stations, then enter the house at the right end to finish." },
           { q: "What is his big goal?", a: "He wants to become a Full Stack Developer: someone who builds both the front end and the back end of a website." },
           { q: "How will he get there?", a: "One project at a time. He studies, he codes, he writes, and he stays curious." },
           { q: "What is his next step?", a: "Keep learning, build new projects and practise his English. That's why he made this game for you!" }
         ],
-        bye: "Fair winds, friend!" }
+        bye: "Good luck out there, friend!" }
     },
     terminal: [
       { q: "Which language is used to structure a web page?", a: ["HTML", "Python", "SQL"], c: 0 },
@@ -417,7 +405,7 @@
     },
     ending: {
       // EDIT ME: a personal line for the secret ending
-      secret: "You collected every star on my pier. Thank you for being so curious. See you in the next level!"
+      secret: "You found every secret on my pier. Thank you for being so curious. See you in the next level!"
     }
   };
 
@@ -442,25 +430,39 @@
   ];
   const ACH = [
     { id: "profile", t: "Meet the player", xp: 10 },
-    { id: "places", t: "Visit the 4 places on the pier", xp: 40 },
-    { id: "quests", t: "See all the projects", xp: 30 },
+    { id: "skills", t: "Check the skills", xp: 10 },
     { id: "about", t: "Read my story", xp: 10 },
+    { id: "inventory", t: "Open the inventory", xp: 10 },
+    { id: "facts", t: "Unlock all the fun facts", xp: 30 },
+    { id: "quiz", t: "Finish the quiz", xp: 20 },
+    { id: "vocab", t: "Open all the tech words", xp: 30 },
+    { id: "places", t: "Visit the 4 places on the pier", xp: 40 },
+    { id: "quests", t: "Inspect all the quests", xp: 30 },
     /* bonus: optional, never needed to finish the game */
-    { id: "stars", t: "Collect all 6 stars", xp: 60, bonus: true }
+    { id: "stars", t: "Collect all 6 stars", xp: 60, bonus: true },
+    { id: "chest", t: "Open the hidden chest", xp: 20, bonus: true },
+    { id: "floppy", t: "Find the Floppy Disk", xp: 10, bonus: true },
+    { id: "bookitem", t: "Find the Book", xp: 10, bonus: true },
+    { id: "blockitem", t: "Find the Minecraft Block", xp: 10, bonus: true },
+    { id: "owl", t: "Talk to the Wise Owl", xp: 10, bonus: true },
+    { id: "captain", t: "Talk to the Old Fisherman", xp: 10, bonus: true },
+    { id: "terminal", t: "Repair the Broken Terminal", xp: 40, bonus: true },
+    { id: "puzzle", t: "Solve the secret puzzle", xp: 40, bonus: true, secret: true }
   ];
   const MAIN = ACH.filter((a) => !a.bonus), BONUS = ACH.filter((a) => a.bonus);
   const BADGES = [
     { id: "bookcreator", t: "Book Creator", d: "Meet both of Filippo's books", xp: 20, icon: "book", ok: () => game.quests.has("book1") && game.quests.has("book2") },
-    { id: "blockarchitect", t: "Block Architect", d: "Visit the Minecraft boat", xp: 20, icon: "block", ok: () => game.quests.has("mc") },
-    { id: "questmaster", t: "Quest Master", d: "Reach the house at the end", xp: 50, icon: "trophy", ok: () => MAIN.every((a) => game.done.has(a.id)) }
+    { id: "codeexplorer", t: "Code Explorer", d: "Repair the Broken Terminal", xp: 20, icon: "code", ok: () => game.done.has("terminal") },
+    { id: "blockarchitect", t: "Block Architect", d: "Visit the boat and find the Minecraft Block", xp: 20, icon: "block", ok: () => game.quests.has("mc") && game.done.has("blockitem") },
+    { id: "curious", t: "Curious Mind", d: "Read the Developer's Journal", xp: 20, icon: "journal", ok: () => game.journalRead },
+    { id: "questmaster", t: "Quest Master", d: "Complete every main quest", xp: 50, icon: "trophy", ok: () => MAIN.every((a) => game.done.has(a.id)) }
   ];
   const XP_PER_LEVEL = 50, MAX_LEVEL = 7;
 
   /* ================= SETTINGS + AUDIO ================= */
-  const SKEY = PRESENT ? "fm-settings-present" : "fm-settings";
-  const settings = { sound: !PRESENT, volume: 0.6, reduce: window.matchMedia("(prefers-reduced-motion: reduce)").matches };
-  try { Object.assign(settings, JSON.parse(localStorage.getItem(SKEY) || "{}")); } catch (e) { /* storage not available */ }
-  const saveSettings = () => { try { localStorage.setItem(SKEY, JSON.stringify(settings)); } catch (e) { /* ignore */ } };
+  const settings = { sound: true, volume: 0.6, reduce: window.matchMedia("(prefers-reduced-motion: reduce)").matches };
+  try { Object.assign(settings, JSON.parse(localStorage.getItem("fm-settings") || "{}")); } catch (e) { /* storage not available */ }
+  const saveSettings = () => { try { localStorage.setItem("fm-settings", JSON.stringify(settings)); } catch (e) { /* ignore */ } };
   let audio, soundOn = !!settings.sound, reduce = !!settings.reduce;
   function blip(f = 660, d = 0.05, vol = 0.03) {
     if (!soundOn || settings.volume <= 0) return;
@@ -497,17 +499,16 @@
   });
 
   /* ================= STATO DI GIOCO ================= */
-  const FOOT = 128, MINX = 136, MAXX = 296;
-  const player = { x: 140, dir: 1, moving: false, hy: 0, vy: 0, target: null };
+  const FOOT = 128, MINX = 128, MAXX = 296;
+  const player = { x: 178, dir: 1, moving: false, hy: 0, vy: 0, target: null };
   const keys = { left: false, right: false };
-  const SPOTS = { web: 158, mc: PRESENT ? 240 : 186, bye: 236, book1: 208, book2: 208, git: 142, about: 269 };
-  const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, bye: Infinity, about: 6, quest: 5, facts: Infinity, quiz: Infinity, vocab: Infinity };
+  const SPOTS = { web: 158, mc: 186, book1: 208, book2: 208, git: 142, about: 269 };
+  const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, about: 6, quest: 5, facts: Infinity, quiz: Infinity, vocab: Infinity };
   const SAYS = {
     web: "Building something new…",
     book1: "“3:17” is out on Amazon!",
     book2: "“Diary of a Content Creator” is out on Amazon!",
     mc: "Server online. Come play!",
-    bye: "Thank you!",
     git: "git push origin main",
     profile: "Hi! I'm Filippo. Welcome to my world!",
     stats: "Skill check… not bad!",
@@ -524,26 +525,15 @@
 
   const game = { xp: 0, done: new Set(), places: new Set(), quests: new Set(), flipped: new Set(), stars: 0, finished: false, badges: new Set(), items: new Set(), repair: 0, chestOpen: false, journalRead: false, secretShown: false, finaleDone: false };
   const STARS = [
-    { x: 140, y: 111 }, { x: 160, y: 111 }, { x: 198, y: 74 }, { x: 236, y: 111 }, { x: 252, y: 74 }, { x: 290, y: 100 }
+    { x: 140, y: 111 }, { x: 160, y: 111 }, { x: 198, y: 74 }, { x: 238, y: 94 }, { x: 252, y: 74 }, { x: 290, y: 100 }
   ].map((s) => Object.assign(s, { got: false, p: Math.random() * 6 }));
   const HOTSPOTS = [
-    { id: "post", n: 1, x: 152, mx: 152, my: 96, spot: 158, bx: [143, 104, 161, 124], act: () => "web" },
-    { id: "boat", n: 2, x: 186, mx: 178, my: 124, spot: 186, bx: [160, 134, 228, 148], act: () => "mc" },
-    { id: "mail", n: 3, x: 208, mx: 224, my: 97, spot: 208, bx: [214, 105, 232, 127], act: () => ((mailToggle = !mailToggle) ? "book1" : "book2") },
-    { id: "door", n: 4, x: 269, mx: 269, my: 93, spot: 269, bx: [258, 100, 280, 127], act: () => "about" }
+    { id: "post", x: 152, mx: 152, my: 96, spot: 158, bx: [143, 104, 161, 124], act: () => "web" },
+    { id: "boat", x: 186, mx: 178, my: 124, spot: 186, bx: [160, 134, 228, 148], act: () => "mc" },
+    { id: "mail", x: 208, mx: 224, my: 97, spot: 208, bx: [214, 105, 232, 127], act: () => ((mailToggle = !mailToggle) ? "book1" : "book2") },
+    { id: "door", x: 269, mx: 269, my: 93, spot: 269, bx: [258, 100, 280, 127], act: () => "about" }
   ];
   const PLACE_OF_ACT = { web: "post", mc: "boat", book1: "mail", book2: "mail", about: "door" };
-
-  /* ---- guided route: start on the left, finish at the house on the right ---- */
-  const ROUTE = [
-    { id: "web", short: "Station 1", x: 158, hot: "post", where: "Station 1", text: "Station 1 · Web projects", done: () => game.quests.has("web") },
-    { id: "mc", short: "Station 2", x: 186, hot: "boat", where: "Station 2", text: "Station 2 · Minecraft server", done: () => game.quests.has("mc") },
-    { id: "books", short: "Station 3", x: 208, hot: "mail", where: "Station 3", text: "Station 3 · My books (press E twice)", done: () => game.quests.has("book1") && game.quests.has("book2") },
-    { id: "home", x: 269, hot: "door", where: "Finish", text: "Finish · Enter the house at the right end", done: () => game.finished }
-  ];
-  const currentStep = () => ROUTE.find((r) => !r.done()) || null;
-  const routeReady = () => ROUTE.slice(0, -1).every((r) => r.done());
-  let gTarget = null, gDir = 0, gKey = "", lockAt = -9;
 
   /* ---- fumetto / toast / prompt ---- */
   const bub = document.getElementById("bubble"), toastEl = document.getElementById("toast"), promptEl = document.getElementById("prompt");
@@ -582,7 +572,6 @@
     renderQuest();
   }
   function addXP(n, label) {
-    if (PRESENT) return;
     const before = level(); game.xp += n; setHUD();
     if (label) toast(`+${n} XP · ${label}`);
     if (level() > before) {
@@ -590,7 +579,7 @@
     }
   }
   function award(id) {
-    if (PRESENT || game.done.has(id)) return;
+    if (game.done.has(id)) return;
     const a = ACH.find((x) => x.id === id); if (!a) return;
     game.done.add(id);
     addXP(a.xp); toast(`★ ${a.bonus ? "Bonus" : "Quest"} complete: ${a.t} (+${a.xp} XP)`, "ach"); jingle([660, 880]);
@@ -619,7 +608,6 @@
     setTimeout(() => { bannerEl.className = ""; setTimeout(nextBanner, 300); }, 3600);
   }
   function checkBadges() {
-    if (PRESENT) return;
     BADGES.forEach((b) => {
       if (game.badges.has(b.id) || !b.ok()) return;
       game.badges.add(b.id);
@@ -678,9 +666,9 @@
   function renderQuest() {
     const ml = $("qlog"); if (!ml) return;
     const row = (a) => `<li class="${game.done.has(a.id) ? "done" : ""}"><span>${game.done.has(a.id) ? "✔" : "□"}</span>${a.secret && !game.done.has(a.id) ? "??? (secret)" : a.t}<em>+${a.xp} XP</em></li>`;
-    ml.innerHTML = ROUTE.map((r, i) => PRESENT ? `<li><span>${i + 1}.</span>${r.text}<em>${r.where}</em></li>` : `<li class="${r.done() ? "done" : ""}"><span>${r.done() ? "✔" : "□"}</span>${r.text}<em>${r.where}</em></li>`).join("");
+    ml.innerHTML = MAIN.map(row).join("");
     $("bonuslog").innerHTML = BONUS.map(row).join("");
-    $("qfound").textContent = `${ROUTE.filter((r) => r.done()).length}/${ROUTE.length}`;
+    $("qfound").textContent = `${MAIN.filter((a) => game.done.has(a.id)).length}/${MAIN.length}`;
     $("bfound").textContent = `${BONUS.filter((a) => game.done.has(a.id)).length}/${BONUS.length}`;
     renderBadges();
   }
@@ -710,7 +698,7 @@
     act.state = "do"; act.t0 = t;
     act.endAt = act.hold ? Infinity : t + DUR[act.name];
     say(SAYS[act.name]);
-    if (act.name in SPOTS) player.dir = (PRESENT && act.name === "mc") ? -1 : 1;
+    if (act.name in SPOTS) player.dir = 1;
     blip(520, 0.05); setTimeout(() => blip(780, 0.06), 70);
     const pl = PLACE_OF_ACT[act.name];
     if (pl) { game.places.add(pl); if (game.places.size >= 4) award("places"); }
@@ -788,50 +776,14 @@
   function drawGrass(x, y) {
     R(ctx, "#0a0a14", x - 1, y - 1, 8, 8); R(ctx, "#5fbf3f", x, y, 6, 2); R(ctx, "#8a5a30", x, y + 2, 6, 4); R(ctx, "#6b4423", x + 1, y + 3, 1, 1); R(ctx, "#6b4423", x + 4, y + 4, 1, 1); R(ctx, "#3f9a2a", x + 2, y, 1, 1);
   }
-  function drawMcStone(x, y) {
-    R(ctx, "#0a0a14", x - 1, y - 1, 8, 8); R(ctx, "#8d93a3", x, y, 6, 6); R(ctx, "#aab0bf", x, y, 6, 1); R(ctx, "#6b7080", x + 1, y + 2, 2, 1); R(ctx, "#6b7080", x + 3, y + 4, 2, 1); R(ctx, "#6b7080", x, y + 5, 6, 1);
-  }
-  /* presentation mode: the blocks stay on the boat and grow into a little castle */
-  const MC_LAYOUT = [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [1, 1], [2, 1], [3, 1], [4, 1], [2, 2], [3, 2]];
-  const pm = { built: [], done: false };
-  const mcPos = (b) => [boatPos.bx + 10 + b[0] * 9, boatPos.by - 14 - b[1] * 7];
-  const drawMcBlock = (b, x, y) => (b[1] === 0 ? drawGrass(x, y) : drawMcStone(x, y));
-  function drawBoatBlocks(t) {
-    MC_LAYOUT.forEach((b, i) => { if (pm.built[i]) { const [x, y] = mcPos(b); drawMcBlock(b, x, y); } });
-    if (!pm.done) return;
-    const fl = reduce ? 0 : Math.floor(t * 8) % 2;
-    [[0, 0], [5, 0]].forEach((b) => { // torches
-      const [x, y] = mcPos(b);
-      R(ctx, "#0a0a14", x + 1, y - 8, 4, 8); R(ctx, "#6b4423", x + 2, y - 5, 2, 5); R(ctx, fl ? "#ffd34d" : "#ff9d3a", x + 2, y - 7, 2, 2); R(ctx, "#fff6b0", x + 2, y - 7 + fl, 2, 1);
-      glow(ctx, x + 3, y - 6, 12, "255,170,60", 0.45);
-    });
-    const [fx, fy] = mcPos([2, 2]); // flag on the tower
-    const w = reduce ? 0 : Math.round(Math.sin(t * 5));
-    R(ctx, "#0a0a14", fx + 5, fy - 17, 4, 18); R(ctx, "#cfd6e4", fx + 6, fy - 16, 1, 17);
-    R(ctx, "#0a0a14", fx + 6, fy - 17, 12, 8); R(ctx, "#e5484d", fx + 7, fy - 16, 10 + w, 5); R(ctx, "#ffd34d", fx + 9, fy - 15, 2, 2);
-  }
-  function mcFinish() { // sunrise + fireworks + jump
-    pm.done = true;
-    if (!dawnOn) { dawnOn = true; dawnT0 = nowT; }
-    fwUntil = nowT + 9; fwNext = nowT;
-    hop(-2.6); jingle([523, 659, 784, 1046, 1318]);
-    MC_LAYOUT.forEach((b) => { const [x, y] = mcPos(b); burst(x + 3, y + 3, 3, b[1] ? "#cfd6e4" : "#9be07a", "spark"); });
-  }
-  const MC_END = 0.8 + MC_LAYOUT.length * 0.4 + 0.4;
-  function mcInstant() { MC_LAYOUT.forEach((b, i) => { pm.built[i] = true; }); mcFinish(); }
-  function mcReset() { pm.built = []; pm.done = false; dawnOn = false; dawn = 0; fwUntil = 0; }
   function drawPick(hx, hy, dir, f) {
     if (f === 0) { line("#6b4423", hx, hy, hx + 7 * dir, hy - 9); R(ctx, "#0a0a14", hx + 7 * dir - 3, hy - 11, 7, 4); R(ctx, "#cfd6e4", hx + 7 * dir - 2, hy - 10, 5, 2); }
     else { line("#6b4423", hx, hy, hx + 8 * dir, hy + 2); R(ctx, "#0a0a14", hx + 8 * dir - 2, hy - 3, 4, 8); R(ctx, "#cfd6e4", hx + 8 * dir - 1, hy - 2, 2, 6); }
   }
-  function glyphAt(ch, x, y, col) {
-    (GLYPHS[ch] || []).forEach((row, yy) => [...row].forEach((c, xx) => { if (c === "1") R(ctx, col, x + xx, y + yy, 1, 1); }));
-  }
-  function drawMarker(x, y, visited, t, n) {
+  function drawMarker(x, y, visited, t) {
     const yy = y + (reduce ? 0 : Math.round(Math.sin(t * 4 + x) * 1.5));
     if (visited) { R(ctx, "#0a0a14", x - 3, yy - 3, 7, 7); R(ctx, "#2fa85c", x - 2, yy - 2, 5, 5); R(ctx, "#fff", x - 1, yy, 1, 1); R(ctx, "#fff", x, yy + 1, 1, 1); R(ctx, "#fff", x + 1, yy - 1, 1, 1); return; }
     R(ctx, "#0a0a14", x - 4, yy - 6, 9, 12); R(ctx, "#ffd34d", x - 3, yy - 5, 7, 10); R(ctx, "#fff6b0", x - 3, yy - 5, 7, 1);
-    if (n) { glyphAt(String(n), x - 1, yy - 3, "#0a0a14"); R(ctx, "#0a0a14", x - 2, yy + 3, 5, 1); return; }
     R(ctx, "#0a0a14", x - 1, yy - 4, 3, 5); R(ctx, "#0a0a14", x - 1, yy + 2, 3, 2);
     R(ctx, "#0a0a14", x - 1, yy + 6, 3, 1);
   }
@@ -954,38 +906,7 @@
       once("land", e >= 2.6, () => { mailbox.flag = true; mailbox.downAt = 0; burst(224, 108, 12, "#ffd36b"); jingle([660, 784, 988, 1318]); });
     }
 
-    if (n === "bye") {
-      const cy = FOOT - 26 + hy;
-      glow(ctx, px, cy, 52, "255,214,140", 0.32 + 0.12 * Math.sin(e * 3));
-      once("h0", e > 0.3, () => hop(-2.8));
-      if (e > 2) every("hop", e, 1.3, () => hop(-2.3));
-      for (let i = 0; i < 8; i++) { // ring of stars around Filippo
-        const a = e * 2.4 + i * Math.PI / 4, sxx = Math.round(px + Math.cos(a) * 22), syy = Math.round(cy - 6 + Math.sin(a) * 9), c = i % 2 ? "#ffd34d" : "#6ee7d8";
-        R(ctx, c, sxx, syy, 2, 2); if (Math.sin(a) > 0) { R(ctx, "#fff6b0", sxx - 1, syy, 4, 1); R(ctx, "#fff6b0", sxx, syy - 1, 1, 4); }
-      }
-      every("cf", e, 0.1, () => addPart({ x: px - 85 + Math.random() * 170, y: 40, vx: (Math.random() - 0.5) * 0.3, vy: 0.35 + Math.random() * 0.35, life: 100, kind: "bit", col: FW[Math.floor(Math.random() * FW.length)] }));
-      every("hr", e, 0.45, () => addPart({ x: px + (Math.random() * 18 - 9), y: cy - 24, vx: (Math.random() - 0.5) * 0.3, vy: -0.45, life: 52, kind: "heart", col: Math.random() > 0.4 ? "#e86f8f" : "#ffc857" }));
-      once("fw", true, () => { fwUntil = nowT + 3600; fwNext = nowT + 0.2; });
-    }
-    if (n === "mc" && PRESENT) {
-      const end = pm.done ? 0.3 : MC_END;
-      if (!pm.done && e < end) {
-        const f = Math.floor(e / 0.22) % 2, hx = px - 8, hyy = FOOT - 20 + hy;
-        drawPick(hx, hyy, -1, f);
-        every("sw", e, 0.22, (i) => { if (i % 2 === 1) { burst(hx - 8, hyy + 2, 3, "#ffe08a", "spark"); blip(220, 0.04, 0.025); } });
-      }
-      MC_LAYOUT.forEach((b, i) => {
-        if (pm.built[i]) return;
-        const p = (e - (0.8 + i * 0.4)) / 0.6;
-        if (p < 0) return;
-        const [lx, ly] = mcPos(b);
-        if (p < 1) drawMcBlock(b, Math.round(lerp(px - 8, lx, p)), Math.round(lerp(FOOT - 30, ly, p) - Math.sin(p * Math.PI) * 18));
-        else { pm.built[i] = true; burst(lx + 3, ly + 4, 3, b[1] ? "#cfd6e4" : "#9be07a", "spark"); blip(330 + i * 30, 0.05, 0.025); }
-      });
-      once("fin", e >= end, mcFinish);
-      if (e > end && e < end + 6) every("cel", e, 0.9, () => hop(-2));
-    }
-    if (n === "mc" && !PRESENT) {
+    if (n === "mc") {
       const f = Math.floor(e / 0.22) % 2, hx = px + 8, hyy = FOOT - 20 + hy;
       drawPick(hx, hyy, 1, f);
       every("sw", e, 0.22, (i) => { if (i % 2 === 1) { burst(hx + 8, hyy + 2, 3, "#ffe08a", "spark"); blip(220, 0.04, 0.025); } });
@@ -1034,10 +955,14 @@
     "..hhhhhhhh..", "...hhhhhh...", "..nnnnnnnn..", ".nnnnyynnnn.", ".nnnnnnnnnn.", ".snnnyynnns.",
     ".snnnnnnnns.", "..nnnnnnnn..", "..nnnyynnn..", "..NNNNNNNN..", "..NNN..NNN..", "..NNN..NNN..",
     "..kkk..kkk..", ".kkkk..kkkk."
-  ], { n: "#2a3d99", N: "#0f1a4a", w: "#f2e6c8", y: "#ffc857", s: "#e8b890", h: "#cfd6e4", k: "#2a1a10" });
+  ], { n: "#d48a2a", N: "#8a5416", w: "#f2e6c8", y: "#ffe08a", s: "#e8b890", h: "#cfd6e4", k: "#2a1a10" });
   const NPC_SPR = { owl: OWL, captain: CAPTAIN };
 
-  const ITEM_DEFS = []; // optional collectibles removed to keep the presentation simple
+  const ITEM_DEFS = [
+    { id: "floppy", award: "floppy", icon: "floppy", x: 150 },
+    { id: "book", award: "bookitem", icon: "book", x: 196 },
+    { id: "block", award: "blockitem", icon: "block", x: 222 }
+  ];
   const wob = (t, s, a) => (reduce ? 0 : Math.round(Math.sin(t * s) * a));
 
   function drawItems(t) {
@@ -1097,7 +1022,10 @@
     }
   }
   function drawNPCs(t) {
-        ctx.drawImage(CAPTAIN, 120, 106 + (wob(t, 1.6, 0.6) > 0 ? 1 : 0));
+    const bob = wob(t + 2, 2.2, 0.6) > 0 ? 1 : 0;
+    R(ctx, "#0a0a14", 246, 118, 13, 10); R(ctx, "#8a5a30", 247, 119, 11, 8); R(ctx, "#6b4423", 247, 122, 11, 1); R(ctx, "#a8702f", 247, 119, 11, 1);
+    ctx.drawImage(OWL, 246, 105 + bob);
+    ctx.drawImage(CAPTAIN, 229, 106 + (wob(t, 1.6, 0.6) > 0 ? 1 : 0));
   }
   function drawShoot(t) {
     if (!shoot) return;
@@ -1107,7 +1035,7 @@
     for (let i = 0; i < 14; i++) { ctx.globalAlpha = (1 - i / 14) * 0.9; R(ctx, i < 3 ? "#fff6b0" : "#9fd8ff", x + i * 2.5, y - i * 0.6, 2, 1); }
     ctx.globalAlpha = 1; R(ctx, "#ffffff", x, y, 2, 2);
   }
-  function drawWorld(t) { drawNPCs(t); drawShoot(t); }
+  function drawWorld(t) { drawStone(t); drawTerminal(t); drawChest(t); drawNPCs(t); drawItems(t); drawShoot(t); }
 
   /* dawn: gradual night -> sunrise overlay */
   const [dawnCv, dg] = mk(W, H), [moonCv, mcg] = mk(40, 40);
@@ -1130,7 +1058,7 @@
   const FW = ["#ffd34d", "#e86f8f", "#6ee7d8", "#a78bfa", "#ff9d5c", "#8ff0a4"];
   function drawRockets(t) {
     if (t < fwUntil && t >= fwNext) {
-      rockets.push({ x: pmEnding ? player.x - 75 + Math.random() * 150 : 120 + Math.random() * 190, y: 126, vy: -(2.3 + Math.random() * 0.7), ty: pmEnding ? 46 + Math.random() * 26 : 22 + Math.random() * 40, col: FW[Math.floor(Math.random() * FW.length)] });
+      rockets.push({ x: 120 + Math.random() * 190, y: 126, vy: -(2.3 + Math.random() * 0.7), ty: 22 + Math.random() * 40, col: FW[Math.floor(Math.random() * FW.length)] });
       fwNext = t + (reduce ? 1.4 : 0.45 + Math.random() * 0.4);
     }
     for (let i = rockets.length - 1; i >= 0; i--) {
@@ -1181,7 +1109,7 @@
   function collectItem(it) {
     game.items.add(it.id); burst(it.x, 122, 12, "#ffd34d"); jingle([784, 988, 1318]);
     award(it.award); renderInventory(); checkBadges();
-    toast(`Found: ${CONTENT.items[it.id].name} · read it in the Inventory`);
+    setTimeout(() => openItemCard(it.id), 450);
   }
 
   /* chest */
@@ -1265,67 +1193,22 @@
 
   /* interactables added to the pier (marker rules: show / done) */
   HOTSPOTS.push(
-    { id: "captain", mx: 128, my: 94, spot: 136, bx: [118, 104, 136, 128], run: () => openNPC("captain"), done: () => game.done.has("captain") }
+    { id: "captain", mx: 236, my: 96, spot: 236, bx: [229, 104, 243, 128], run: () => openNPC("captain"), done: () => game.done.has("captain") },
+    { id: "tablet", mx: 172, my: 100, spot: 172, bx: [165, 112, 179, 128], run: openPuzzle, hide: true },
+    { id: "owl", mx: 252, my: 94, spot: 252, bx: [246, 102, 258, 128], run: () => openNPC("owl"), done: () => game.done.has("owl") },
+    { id: "terminal", mx: 286, my: 100, spot: 286, bx: [278, 111, 294, 128], run: openTerminal, done: () => game.repair >= 3 },
+    { id: "chest", mx: 302, my: 106, spot: 296, bx: [296, 112, 309, 128], run: interactChest, done: () => game.chestOpen, show: () => game.stars >= 3 || game.chestOpen }
   );
-
-  /* ---- guide bar + on-scene arrows ---- */
-  const guideEl = $("guide"), guideStep = $("guideStep"), guideText = $("guideText");
-  function updateGuide() {
-    if (PRESENT) { gTarget = null; gDir = 0; return; }
-    const s = currentStep(), done = ROUTE.filter((r) => r.done()).length;
-    let step, text; gDir = 0; gTarget = s && s.hot ? s.hot : null;
-    if (!s) { step = "COMPLETE"; text = "You reached the end. Thanks for playing!"; }
-    else {
-      step = `STEP ${done + 1}/${ROUTE.length}`;
-      if (s.x != null) {
-        const nh = nearHotspot();
-        if (nh && nh.id === s.hot) text = `Press E here: ${s.text}`;
-        else if (s.x - player.x >= 0) { text = `▶ Walk right: ${s.text}`; gDir = 1; }
-        else { text = `◀ Walk back: ${s.text}`; gDir = -1; }
-      } else text = s.text;
-    }
-    const key = step + "|" + text + "|" + done;
-    if (key === gKey) return;
-    gKey = key; guideStep.textContent = step; guideText.textContent = text;
-    guideEl.classList.toggle("done", !s);
-    buttons.forEach((b) => {
-      const r = ROUTE.find((x) => x.menu === b.dataset.panel);
-      b.classList.toggle("next", !!s && !!r && r.id === s.id);
-      b.classList.toggle("ok", !!r && r.done());
-      b.classList.toggle("locked", false);
-    });
-  }
-  function lockedMessage() {
-    if (nowT - lockAt < 2.5) return; lockAt = nowT;
-    const s = currentStep();
-    const left = ROUTE.slice(0, -1).filter((r) => !r.done()).map((r) => r.short);
-    say(`Locked! ${left.length} left: ${left.join(", ")}`, 18); blip(180, 0.15, 0.04);
-    toast("Locked · next: " + (s ? s.text : ""));
-    guideEl.classList.remove("shake"); void guideEl.offsetWidth; guideEl.classList.add("shake");
-  }
-  function pixShape(x, y, dir, col, ox, oy) {
-    for (let i = 0; i < 5; i++) {
-      const w = 9 - 2 * i;
-      if (dir === 0) R(ctx, col, x - 4 + i + ox, y + i + oy, w, 1);
-      else R(ctx, col, dir > 0 ? x + i + ox : x - i - 1 + ox, y - 4 + i + oy, 1, w);
-    }
-  }
-  function pixArrow(x, y, dir) {
-    [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(([a, b]) => pixShape(x, y, dir, "#0a0a14", a, b));
-    pixShape(x, y, dir, "#ffd34d", 0, 0);
-  }
-  function drawFinishSign(t) {
-    const ready = routeReady(), on = ready && (reduce || Math.floor(t * 3) % 2 === 0);
-    R(ctx, "#0a0a14", 258, 65, 31, 9); R(ctx, "#51341f", 259, 66, 29, 7);
-    const col = game.finished ? "#6ee7d8" : ready ? (on ? "#ffd34d" : "#fff6b0") : "#8d89b5";
-    [...(ready ? "FINISH" : "LOCKED")].forEach((ch, i) => glyphAt(ch, 261 + i * 4, 67, col));
-    R(ctx, "#0a0a14", 270, 74, 1, 1); R(ctx, "#51341f", 272, 74, 2, 3); R(ctx, "#51341f", 280, 74, 2, 3);
-    if (!ready) { R(ctx, "#0a0a14", 266, 106, 7, 6); R(ctx, "#8d89b5", 267, 107, 5, 4); R(ctx, "#0a0a14", 268, 103, 3, 3); R(ctx, "#5a5780", 269, 104, 1, 1); R(ctx, "#0a0a14", 269, 109, 1, 1); }
-  }
 
   /* ================= LOOP ================= */
   let last = 0;
-  const POSX = () => (window.innerWidth <= 1100 ? 0.66 : 0.62);
+  // horizontal framing: when the screen is narrower than 16:9 the scene is cropped; keep the playable pier (x >= 110) in view
+  const POSX = () => {
+    const vw = window.innerWidth, vh = window.innerHeight, sc = Math.max(vw / W, vh / H), maxL = W - vw / sc;
+    return maxL <= 0.5 ? 0.5 : Math.min(1, Math.min(110, maxL) / maxL);
+  };
+  const applyFrame = () => { cv.style.objectPosition = POSX() * 100 + "% 50%"; };
+  window.addEventListener("resize", applyFrame); applyFrame();
   function sceneToScreen(x, y) {
     const vw = window.innerWidth, vh = window.innerHeight, sc = Math.max(vw / W, vh / H);
     return [(vw - W * sc) * POSX() + x * sc, (vh - H * sc) * 0.5 + y * sc];
@@ -1368,7 +1251,7 @@
 
     // stelle da raccogliere
     STARS.forEach((s, i) => {
-      if (s.got || PRESENT) return;
+      if (s.got) return;
       const sy = s.y + Math.sin(t * 3 + s.p) * 2;
       if (Math.abs(player.x - s.x) < 8 && (Math.abs(FOOT - 22 + player.hy - sy) < 9 || Math.abs(FOOT - 40 + player.hy - sy) < 8)) {
         s.got = true; game.stars++; setHUD();
@@ -1411,21 +1294,20 @@
     glow(ctx, 269, 112, 14, "255,200,100", 0.5);
     if (mailbox.flag) { R(ctx, "#0a0a14", 229, 98, 3, 10); R(ctx, "#ffd36b", 230, 99, 1, 8); R(ctx, "#0a0a14", 227, 98, 6, 5); R(ctx, "#ffc857", 228, 99, 4, 3); }
     drawDoorOpen(t);
-    drawWorld(t); if (!PRESENT) drawFinishSign(t); drawDawn();
+    drawWorld(t); drawDawn();
 
     // stelle
     STARS.forEach((s) => {
-      if (s.got || PRESENT) return;
+      if (s.got) return;
       const sy = Math.round(s.y + Math.sin(t * 3 + s.p) * 2);
       glow(ctx, s.x, sy, 10, "255,215,90", 0.9);
       drawStar(s.x - 4, sy - 5);
     });
 
     // segnaposto dei luoghi
-    HOTSPOTS.forEach((h) => { if (PRESENT || h.hide || (h.show && !h.show())) return; drawMarker(h.mx, h.my, game.places.has(h.id) || !!(h.done && h.done()), t, h.n); });
+    HOTSPOTS.forEach((h) => { if (h.hide || (h.show && !h.show())) return; drawMarker(h.mx, h.my, game.places.has(h.id) || !!(h.done && h.done()), t); });
 
     fxBack(t);
-    if (PRESENT) drawBoatBlocks(t);
 
     // personaggio
     const typing = act && act.state === "do" && (act.name === "web" || act.name === "git");
@@ -1440,12 +1322,6 @@
     ctx.drawImage(sp, -15, 0); ctx.restore();
     glow(ctx, px, FOOT - 20, 22, "255,200,110", 0.18 * lf);
 
-    if (!blocked()) {
-      const ob = reduce ? 0 : Math.round(Math.sin(t * 5) * 2);
-      const gh = gTarget && HOTSPOTS.find((h) => h.id === gTarget);
-      if (gh && !(act && act.state === "do" && PLACE_OF_ACT[act.name] === gTarget)) pixArrow(gh.mx, gh.my - 14 + ob, 0);
-      if (gDir && !(act && act.name in SPOTS)) pixArrow(px + gDir * (22 + ob), FOOT - 24, gDir);
-    }
     fxFront(t);
     drawRockets(t);
     drawParts();
@@ -1458,8 +1334,6 @@
       ctx.fillStyle = `rgba(255,236,130,${a * 0.25})`; ctx.fillRect(Math.round(f.x) - 1, Math.round(f.y), 3, 1); ctx.fillRect(Math.round(f.x), Math.round(f.y) - 1, 1, 3);
     });
 
-    updateGuide();
-
     // fumetto e suggerimento di interazione
     if (bub.classList.contains("show")) {
       const [bx, by] = sceneToScreen(px, py - 50);
@@ -1468,7 +1342,7 @@
       bub.style.top = Math.max(70, by) + "px";
     }
     const nh = nearHotspot();
-    if (nh && !act && !player.moving && !blocked() && !PRESENT) {
+    if (nh && !act && !player.moving && !blocked()) {
       const [ax, ay] = sceneToScreen(nh.mx, nh.my - 10);
       promptEl.textContent = touchUI ? "Tap A" : "Press E";
       promptEl.style.left = ax + "px"; promptEl.style.top = ay + "px"; promptEl.classList.add("show");
@@ -1480,7 +1354,6 @@
   let pend = null;
   const blocked = () => modalOpen || introOpen || endOpen;
   function activate(h) {
-    if (h.id === "door" && !routeReady()) { lockedMessage(); return; }
     if (h.run) { endAct(); h.run(); return; }
     if (h.id === "door") showPanel("about"); // also updates the menu
     perform(h.act(), { restart: true });
@@ -1489,40 +1362,10 @@
   function jump() { if (!blocked()) hop(-2.6); }
   const isKbControl = (e) => !!(e.target && e.target.matches && e.target.matches("button:focus-visible, a:focus-visible, [tabindex]:focus-visible"));
   const isInput = (e) => !!(e.target && e.target.tagName === "INPUT");
-  /* presentation mode: closing scene (press → on the last slide) */
-  let pmEnding = false;
-  const scn = $("scene");
-  function startEnd() {
-    if (pmEnding) return;
-    pmEnding = true; document.body.classList.add("pm-end"); hideBubble();
-    perform("bye", { hold: true, restart: true });
-    jingle([523, 659, 784, 1046, 1318, 1568]);
-    setTimeout(() => {
-      if (!pmEnding) return;
-      const vw = window.innerWidth, vh = window.innerHeight, kz = 1.6, [sx, sy] = sceneToScreen(player.x, FOOT - 26);
-      const dx = Math.max((vw - sx) * (1 - kz), Math.min(sx * (kz - 1), vw * 0.5 - sx)), dy = Math.max((vh - sy) * (1 - kz), Math.min(sy * (kz - 1), vh * 0.62 - sy));
-      scn.style.transformOrigin = `${sx}px ${sy}px`; scn.style.transform = `translate(${dx}px, ${dy}px) scale(${kz})`;
-    }, 1100);
-  }
-  function stopEnd() {
-    if (!pmEnding) return;
-    pmEnding = false; document.body.classList.remove("pm-end"); scn.style.transform = "";
-    fwUntil = 0; rockets.length = 0; presentSlide();
-  }
-  function presentKey(e) {
-    const k = e.key;
-    if (blocked() || isInput(e) || e.ctrlKey || e.metaKey || e.altKey) return;
-    if (pmEnding) { if (["ArrowLeft", "a", "A", "PageUp", "ArrowUp", "w", "W", "Home", "Backspace"].includes(k)) { e.preventDefault(); stopEnd(); } return; }
-    if (["ArrowRight", "d", "D", "PageDown", "ArrowDown", "s", "S"].includes(k)) { e.preventDefault(); if (current === buttons.length - 1) startEnd(); else goSlide(1); }
-    else if (["ArrowLeft", "a", "A", "PageUp", "ArrowUp", "w", "W"].includes(k)) { e.preventDefault(); goSlide(-1); }
-    else if (k === "Home") { e.preventDefault(); show(0, true); }
-    else if (k === "End") { e.preventDefault(); show(buttons.length - 1, true); }
-  }
   window.addEventListener("keydown", (e) => {
     const k = e.key;
-    if (k === "Escape") { if (modalOpen) closeModal(); else if (endOpen) closeEnd(); else if (introOpen) endIntro(); else if (PRESENT && pmEnding) stopEnd(); return; }
+    if (k === "Escape") { if (modalOpen) closeModal(); else if (endOpen) closeEnd(); else if (introOpen) endIntro(); return; }
     if (k === "Tab") { trapTab(e); return; }
-    if (PRESENT) { presentKey(e); return; }
     if (blocked() || isInput(e)) return;
     if (k === "ArrowLeft" || k === "a" || k === "A") keys.left = true;
     else if (k === "ArrowRight" || k === "d" || k === "D") keys.right = true;
@@ -1562,9 +1405,8 @@
 
   // click on the scene: walk, or interact with objects
   function hotspotAt(sx_, sy_) { return HOTSPOTS.find((h) => sx_ >= h.bx[0] && sx_ <= h.bx[2] && sy_ >= h.bx[1] && sy_ <= h.bx[3]); }
-  if (PRESENT) cv.style.pointerEvents = "none";
   cv.addEventListener("click", (e) => {
-    if (PRESENT || blocked()) return;
+    if (blocked()) return;
     const [sx_, sy_] = screenToScene(e.clientX, e.clientY);
     const h = hotspotAt(sx_, sy_);
     if (h && h.run) {
@@ -1583,37 +1425,15 @@
   /* ================= INTERFACCIA ================= */
   let introEndAt = -9;
   const justStarted = () => performance.now() / 1000 - introEndAt < 0.8; // ignore hover that appears under the cursor when the intro closes
-  const buttons = [...document.querySelectorAll("#menu button")].filter((b) => PRESENT ? !b.classList.contains("pm-hide") : !b.classList.contains("pm-only"));
+  const buttons = [...document.querySelectorAll("#menu button")];
   const PANEL_ACT = { profile: "profile", skills: "stats", about: "about", inventory: "inventory", facts: "facts", quiz: "quiz", vocab: "vocab", quest: "quest" };
-  /* presentation mode: one slide per menu item; Filippo walks and acts out what is written */
-  const SLIDES = [
-    { act: "profile" },                                           // Profile
-    { act: "stats" },                                             // Skills
-    { act: "about", chap: 0, say: CONTENT.chapters[0].text[0] },  // The Beginning: at home
-    { act: "inventory", chap: 1, say: CONTENT.chapters[1].text[0] }, // Creating Things: code, books, Minecraft
-    { act: "web", say: "I build websites and try new technologies. This site is one of them." },
-    { act: "book1", say: "“3:17” is a book about the mind: memory, consciousness and free will. It's out on Amazon!" },
-    { act: "book2", say: "“Diary of a Content Creator” is a young-adult novel. It's out on Amazon too!" },
-    { act: "mc", say: "I run a Minecraft server where I try gaming projects. Come play!" },
-    { act: "quest", chap: 2, say: CONTENT.chapters[2].text[0] }   // The Future
-  ];
-  function presentSlide() {
-    const sl = SLIDES[current]; if (!sl) return;
-    if (sl.say) SAYS[sl.act] = sl.say;
-    const mi = SLIDES.findIndex((x) => x.act === "mc");
-    if (current < mi) mcReset(); else if (current > mi && !pm.done) mcInstant();
-    perform(sl.act, { hold: true, restart: true });
-  }
   let current = 0;
-  const pmProgress = $("pmProgress");
-  function goSlide(d) { const n = Math.max(0, Math.min(buttons.length - 1, current + d)); if (n !== current) show(n, true); }
   function showPanel(name) {
     const i = buttons.findIndex((b) => b.dataset.panel === name);
     if (i >= 0) show(i, false, false);
   }
   function show(i, sound, silent) {
-    const want = (i + buttons.length) % buttons.length;
-    current = want;
+    current = (i + buttons.length) % buttons.length;
     buttons.forEach((bt, n) => bt.classList.toggle("sel", n === current));
     const name = buttons[current].dataset.panel;
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("active", p.id === "p-" + name));
@@ -1621,22 +1441,17 @@
     if (name === "quiz" && !quiz.running) renderQuiz();
     if (name === "quest") renderQuest();
     if (sound) blip(660 + current * 70);
-    if (PRESENT) {
-      pmProgress.textContent = `${current + 1}/${buttons.length}`; const lf = document.querySelector(".left"); if (lf) lf.scrollTop = 0;
-      const sl = SLIDES[current]; if (sl && sl.chap != null) { chapIdx = sl.chap; renderChapters(); }
-      if (!silent) presentSlide();
-    }
-    if (!silent && !PRESENT) {
+    if (!silent) {
       if (["profile", "skills", "about", "inventory"].includes(name)) setTimeout(() => award(name), 600);
       perform(PANEL_ACT[name], { hold: ["facts", "quiz", "vocab"].includes(name) });
     }
   }
   buttons.forEach((bt, i) => {
     bt.addEventListener("click", () => show(i, true));
-    bt.addEventListener("mouseenter", () => { if (!PRESENT && i !== current && !justStarted()) show(i, true); });
+    bt.addEventListener("mouseenter", () => { if (i !== current && !justStarted()) show(i, true); });
   });
   window.addEventListener("keydown", (e) => {
-    if (PRESENT || blocked() || isInput(e)) return;
+    if (blocked() || isInput(e)) return;
     if (e.key === "ArrowDown" || e.key === "s" || e.key === "S") { e.preventDefault(); show(current + 1, true); }
     else if (e.key === "ArrowUp" || e.key === "w" || e.key === "W") { e.preventDefault(); show(current - 1, true); }
   });
@@ -1644,12 +1459,10 @@
   // elementi che attivano le azioni (quest board, inventario, GitHub)
   document.querySelectorAll("[data-act]").forEach((el) => {
     const name = el.dataset.act;
-    if (!PRESENT) {
-      el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse" && !justStarted()) perform(name, { hold: true }); });
-      el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") release(name); });
-      el.addEventListener("focus", () => { if (el.matches(":focus-visible")) perform(name, { hold: true }); });
-      el.addEventListener("blur", () => release(name));
-    }
+    el.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse" && !justStarted()) perform(name, { hold: true }); });
+    el.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") release(name); });
+    el.addEventListener("focus", () => { if (el.matches(":focus-visible")) perform(name, { hold: true }); });
+    el.addEventListener("blur", () => release(name));
     el.addEventListener("click", () => { perform(name, { restart: true }); blip(740, 0.05); });
   });
 
@@ -1805,7 +1618,7 @@
     const f = document.querySelector('#menu button.sel'); if (f) f.focus({ preventScroll: true });
     setTimeout(() => { if (!act) perform("profile"); }, 300);
     setTimeout(() => award("profile"), 1500);
-    setTimeout(() => toast(touchUI ? "Use ◀ ▶ to walk, ▲ to jump, A to interact" : "← → walk · SPACE jump · E interact · or click the pier"), 1800);
+    setTimeout(() => toast(touchUI ? "Use the buttons to walk, jump and interact" : "Arrows walk · SPACE jumps · E interacts · click the pier"), 1800);
   }
   $("introStart").addEventListener("click", endIntro);
   $("introSkip").addEventListener("click", endIntro);
@@ -1815,14 +1628,5 @@
   paintIcons(document);
   renderChapters(); renderInventory(); setHUD();
   show(0, false, true);
-  if (PRESENT) {
-    // presentation mode: no intro, everything unlocked, quick links as the last slide
-    introOpen = false; intro.hidden = true; introEndAt = performance.now() / 1000;
-    player.x = 200; // idle spot in the middle of the pier, clear of the text panel
-    const board = document.querySelector(".board"), host = $("linksHost");
-    const lh = document.querySelector("#p-links h2"); if (lh) lh.textContent = "My projects";
-    if (board && host) { host.appendChild(board); const bt = board.querySelector(".board-title"); if (bt) bt.textContent = "Quick links · click to preview"; }
-    show(0, false, true);
-    setTimeout(presentSlide, 600);
-  } else { intro.hidden = false; $("introStart").focus(); runIntro(); }
+  intro.hidden = false; $("introStart").focus(); runIntro();
 })();

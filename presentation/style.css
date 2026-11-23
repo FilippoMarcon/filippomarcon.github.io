@@ -646,8 +646,8 @@ body.pm-end .ui, body.pm-end #bubble, body.pm-end #pmLink { opacity: 0 !importan
 @keyframes endin { from { opacity: 0; transform: translateY(24px) scale(.96); } to { opacity: 1; transform: none; } }
 @keyframes endblink { 50% { opacity: .35; } }
 @media (prefers-reduced-motion: reduce) { body.present #scene { transition: none; } .end-bar, .end-txt > * { animation-duration: .01s !important; } }
-/* presentation mode: date + time on the top left, no motion/volume/sound buttons */
+/* presentation mode: date + time on the top left, no motion button */
 .pm-clock { display: none; }
 body.present .who { display: none; }
 body.present .pm-clock { display: inline; font-family: "Press Start 2P", monospace; font-size: 11px; letter-spacing: .5px; }
-body.present .hud .js-mot, body.present .hud .vol, body.present .hud .js-snd { display: none !important; }
+body.present .hud .js-mot { display: none !important; }

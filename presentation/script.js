@@ -306,7 +306,7 @@
 
   /* ================= DATI ================= */
   const STATS = [
-    ["HTML / CSS", 75], ["JavaScript", 65], ["PHP", 55], ["SQL", 50], ["Python", 35], ["Git / GitHub", 60], ["Sleep resistance", 90]
+    ["HTML / CSS", 80], ["PHP", 55], ["JavaScript", 50], ["Python", 60], ["Sleep resistance", 90]
   ];
   const ICONS = {
     palette: { r: "#c0392b", R: "#7a1f17", w: "#f4e9c8", L: "#8a93a6", l: "#cfd6e4", c: "#16264d", g: "#4ade80", u: "#38bdf8", G: "#5fbf3f", H: "#3f9a2a", D: "#8a5a30", d: "#6b4423", y: "#ffc857", t: "#6ee7d8", n: "#2a3d99", N: "#0f1a4a", p: "#e86f8f", P: "#a8325a", Y: "#d99a1f", K: "#ffe9a0" },
@@ -362,21 +362,21 @@
     ],
     chapters: [
       { title: "The Beginning", text: [ // EDIT ME: tell the real story (when and how it started)
-        "I'm Filippo. I'm 19 and I come from Caorle, a small seaside town in the north of Italy.",
+        "Hi, I'm Filippo. I'm 19 and I come from Caorle.",
         "I love technology, and I like to understand how things work. That curiosity is how my passion for computers began."
       ] },
       { title: "Creating Things", text: [
-        "Today I turn ideas into real things. I write code in HTML, CSS, JavaScript, PHP and SQL, and I keep my projects on GitHub.",
-        "I have published books on Amazon, and I run a Minecraft server where I try gaming projects."
+        "I turn ideas into real things. I write code in HTML, CSS, JavaScript, PHP and Python.",
+        "I have books on Amazon, and I run a Minecraft server."
       ] },
       { title: "The Future", text: [
         "I study computer science because I want to become a Full Stack Developer.",
-        "That means building the part of a website that people see, and the part that works behind it. I want to keep learning and creating."
+        "That means building both the front end and the back end of a website."
       ] }
     ],
     items: {
       floppy: { name: "Floppy Disk", tag: "Programming", short: "Where my code lives",
-        text: "Programming is how I turn ideas into real things. I write HTML, CSS, JavaScript, PHP and SQL, and I save my projects on GitHub." },
+        text: "Programming is how I turn ideas into real things. I write HTML, CSS, JavaScript, PHP and Python." },
       book: { name: "Book", tag: "Writing", short: "My books on Amazon",
         text: "Writing is my other way to create. I have published two books on Amazon: “3:17” and “Diario di un Content Creator”." },
       block: { name: "Minecraft Block", tag: "Gaming", short: "My Minecraft server",
@@ -390,7 +390,7 @@
         start: "Hoo! I'm the Wise Owl. I know all about Filippo's studies. What do you want to know?",
         options: [
           { q: "What does he study?", a: "He studies computer science. He loves learning how software and websites work." },
-          { q: "What are his main skills?", a: "HTML and CSS are his strongest skills, then JavaScript, Git and PHP. SQL and Python are still growing." },
+          { q: "What are his main skills?", a: "HTML and CSS are his strongest skills, then Python, PHP and JavaScript." },
           { q: "Does he sleep at night?", a: "Not always! His “sleep resistance” is 90%. When a project is exciting, he forgets the time." }
         ],
         bye: "Come back any time. Hoo-hoo!" },
@@ -427,7 +427,7 @@
     "My Skills screen has a joke stat: “Sleep resistance”, at 90%."
   ];
   const QUIZ = [
-    { q: "Where does Filippo come from?", a: ["Caorle", "Rome", "Milan"], c: 0, fb: "Caorle, a seaside town in northern Italy." },
+    { q: "Where does Filippo come from?", a: ["Caorle", "Rome", "Milan"], c: 0, fb: "Filippo comes from Caorle." },
     { q: "What does Filippo study?", a: ["Medicine", "Computer science", "Law"], c: 1, fb: "Computer science, of course!" },
     { q: "What has Filippo published on Amazon?", a: ["Books", "Music albums", "Video games"], c: 0, fb: "He has published books." },
     { q: "Which game does Filippo run a server for?", a: ["Chess", "Tetris", "Minecraft"], c: 2, fb: "A Minecraft server!" },
@@ -509,8 +509,8 @@
     mc: "Server online. Come play!",
     bye: "Thank you!",
     git: "git push origin main",
-    profile: "Hi! I'm Filippo. Welcome to my world!",
-    stats: "Skill check… not bad!",
+    profile: "Hi! I'm Filippo.",
+    stats: "I like making websites and more. I sleep little, but I keep my resistance up!",
     inventory: "Let me check my bag…",
     facts: "Ask away! Well, press the button.",
     about: "Come in! This is my place.",
@@ -918,10 +918,10 @@
         R(ctx, "#5a6ab0", x + 2, y + h - 4, w - 4, 1);
         STATS.forEach(([, v], i) => {
           const bh = Math.round((v / 100) * 26 * ease((e - 0.4 - i * 0.14) / 0.5));
-          R(ctx, i === 6 ? "#ffc857" : "#6ee7d8", x + 3 + i * 6, y + h - 4 - bh, 4, bh);
-          if (bh > 1) R(ctx, "#ffffff", x + 3 + i * 6, y + h - 4 - bh, 4, 1);
+          R(ctx, i === STATS.length - 1 ? "#ffc857" : "#6ee7d8", x + 3 + i * 8, y + h - 4 - bh, 6, bh);
+          if (bh > 1) R(ctx, "#ffffff", x + 3 + i * 8, y + h - 4 - bh, 6, 1);
         });
-        once("sp", e > 2.2, () => { burst(x + 3 + 6 * 6 + 2, y + 8, 7, "#ffc857"); jingle([784, 988]); });
+        once("sp", e > 2.2, () => { burst(x + 3 + (STATS.length - 1) * 8 + 3, y + 8, 7, "#ffc857"); jingle([784, 988]); });
       }
     }
 
@@ -1605,9 +1605,9 @@
     { act: "about", chap: 0, say: CONTENT.chapters[0].text[0] },  // The Beginning: at home
     { act: "inventory", chap: 1, say: CONTENT.chapters[1].text[0] }, // Creating Things: code, books, Minecraft
     { act: "web", say: "I build websites and try new technologies. This site is one of them." },
-    { act: "book1", say: "“3:17” is a book about the mind: memory, consciousness and free will. It's out on Amazon!" },
+    { act: "book1", say: "“3:17” is a book about the mind and memory. It's out on Amazon!" },
     { act: "book2", say: "“Diary of a Content Creator” is a young-adult novel. It's out on Amazon too!" },
-    { act: "mc", say: "I run a Minecraft server where I try gaming projects. Come play!" },
+    { act: "mc", say: "I run a Minecraft server. It was the first thing that made me love programming, but I don't want gaming to be my future." },
     { act: "quest", chap: 2, say: CONTENT.chapters[2].text[0] }   // The Future
   ];
   function presentSlide() {

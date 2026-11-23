@@ -500,7 +500,7 @@
   const FOOT = 128, MINX = 136, MAXX = 296;
   const player = { x: 140, dir: 1, moving: false, hy: 0, vy: 0, target: null };
   const keys = { left: false, right: false };
-  const SPOTS = { web: 158, mc: PRESENT ? 240 : 186, bye: 236, book1: 208, book2: 208, git: 142, about: 269 };
+  const SPOTS = { web: 158, mc: PRESENT ? 188 : 186, bye: 236, book1: 208, book2: 208, git: 142, about: 269 };
   const DUR = { web: 6.5, mc: 7, book1: 6, book2: 6, git: 6, profile: 5, stats: 6, inventory: 6.5, bye: Infinity, about: 6, quest: 5, facts: Infinity, quiz: Infinity, vocab: Infinity };
   const SAYS = {
     web: "Building something new…",
@@ -831,8 +831,119 @@
     MC_LAYOUT.forEach((b) => { const [x, y] = mcPos(b); burst(x + 3, y + 3, 3, b[1] ? "#cfd6e4" : "#9be07a", "spark"); });
   }
   const MC_END = 0.8 + MC_LAYOUT.length * 0.4 + 0.4;
-  function mcInstant() { MC_LAYOUT.forEach((b, i) => { pm.built[i] = true; }); mcFinish(); }
+  function mcInstant() { pm.done = true; }
   function mcReset() { pm.built = []; pm.done = false; dawnOn = false; dawn = 0; fwUntil = 0; }
+  /* presentation: fantasy realms. Minecraft world on the Minecraft slide, sky kingdom on the Future slide */
+  const realm = { name: null, p: 0, dir: 0 };
+  let flyY = 0;
+  const realmCv = document.createElement("canvas"); realmCv.width = W; realmCv.height = H;
+  const rg = realmCv.getContext("2d"); rg.imageSmoothingEnabled = false;
+  const realmCache = {};
+  function realmGo(name) {
+    if (name) { if (realm.name !== name) { realm.name = name; realm.p = 0; } realm.dir = 1; if (reduce) realm.p = 1; }
+    else if (realm.name) realm.dir = -1;
+  }
+  function realmStep() {
+    if (!PRESENT) return;
+    if (realm.dir > 0) { realm.p = Math.min(1, realm.p + (reduce ? 1 : 1 / 36)); if (realm.p >= 1) realm.dir = 0; }
+    else if (realm.dir < 0) { realm.p = Math.max(0, realm.p - (reduce ? 1 : 1 / 15)); if (realm.p <= 0) { realm.dir = 0; realm.name = null; } }
+    const target = realm.name === "sky" && realm.dir >= 0 ? -34 : 0;
+    flyY += (target - flyY) * 0.07; if (Math.abs(flyY - target) < 0.2) flyY = target;
+  }
+  function disc(g, col, cx, cy, r) { for (let dy = -r; dy <= r; dy++) { const dx = Math.floor(Math.sqrt(r * r - dy * dy)); R(g, col, Math.round(cx - dx), Math.round(cy + dy), dx * 2 + 1, 1); } }
+  function puff(g, x, y, s, col, sh) {
+    const P = [[0, 0, 5], [7, -3, 7], [14, 0, 6], [20, 1, 4]];
+    P.forEach(([dx, dy, r]) => disc(g, sh, x + dx * s, y + dy * s + 2, Math.round(r * s)));
+    P.forEach(([dx, dy, r]) => disc(g, col, x + dx * s, y + dy * s, Math.round(r * s)));
+  }
+  const newCv = () => { const c = document.createElement("canvas"); c.width = W; c.height = H; const g = c.getContext("2d"); g.imageSmoothingEnabled = false; return [c, g]; };
+  function mcStatic() {
+    if (realmCache.mc) return realmCache.mc;
+    const [c, g] = newCv(), r = rng(11);
+    ["#4fa9ec", "#62b8f2", "#77c5f6", "#8dd1f9", "#a4dcfb", "#bce7fd"].forEach((col, i) => R(g, col, 0, i * 22, W, 23));
+    for (let x = 0; x < W; x += 8) { // far hills made of blocks
+      const h = 3 + Math.round(1.6 * Math.sin(x * 0.045) + 1.2 * Math.sin(x * 0.12 + 1));
+      R(g, "#6fb85c", x, FOOT - h * 8, 8, h * 8); R(g, "#8ad06c", x, FOOT - h * 8, 8, 3); R(g, "#5da84a", x, FOOT - h * 8, 1, h * 8);
+    }
+    R(g, "#8a5a30", 0, FOOT, W, 24); R(g, "#8d93a3", 0, FOOT + 24, W, H - FOOT - 24);
+    for (let i = 0; i < 70; i++) R(g, r() > 0.5 ? "#6b4423" : "#a06a3a", Math.floor(r() * W), FOOT + 6 + Math.floor(r() * 18), 2 + Math.floor(r() * 2), 2);
+    for (let i = 0; i < 50; i++) R(g, r() > 0.5 ? "#6b7080" : "#aab0bf", Math.floor(r() * W), FOOT + 26 + Math.floor(r() * 24), 3, 2);
+    for (let i = 0; i < 8; i++) { const x = Math.floor(r() * (W / 8)) * 8 + 2, y = FOOT + 26 + Math.floor(r() * 5) * 8; R(g, i % 2 ? "#6ee7d8" : "#2a2a33", x, y, 4, 4); R(g, "#fff", x + 1, y + 1, 1, 1); }
+    for (let x = 0; x < W; x += 8) R(g, "rgba(0,0,0,0.13)", x, FOOT, 1, H - FOOT);
+    for (let y = FOOT + 8; y < H; y += 8) R(g, "rgba(0,0,0,0.13)", 0, y, W, 1);
+    R(g, "#5fbf3f", 0, FOOT, W, 4); R(g, "#7ad85a", 0, FOOT, W, 1);
+    for (let x = 0; x < W; x += 8) R(g, "#4aa22f", x + ((x / 8) % 2) * 3 + 2, FOOT + 2, 2, 2);
+    [22, 68, 268, 306].forEach((x) => { // trees
+      R(g, "#6b4423", x, FOOT - 26, 5, 26); R(g, "#4a2f17", x, FOOT - 26, 1, 26);
+      R(g, "#2f8f2f", x - 10, FOOT - 44, 25, 10); R(g, "#2f8f2f", x - 6, FOOT - 52, 17, 8);
+      R(g, "#3fae3f", x - 10, FOOT - 44, 25, 2); R(g, "#3fae3f", x - 6, FOOT - 52, 17, 2); R(g, "#24762a", x - 10, FOOT - 36, 25, 2);
+    });
+    return (realmCache.mc = c);
+  }
+  function paintMc(g, t) {
+    g.drawImage(mcStatic(), 0, 0);
+    glow(g, 262, 26, 34, "255,236,140", 0.35); R(g, "#ffd34d", 252, 16, 20, 20); R(g, "#fff3a0", 255, 19, 14, 14);
+    [[40, 18, 0.9], [150, 36, 1.1], [230, 8, 0.7]].forEach(([x, y, s]) => {
+      const cx = Math.round(((x + (reduce ? 0 : t) * 5 * s) % (W + 60)) - 40);
+      R(g, "#fff", cx, y, 28, 7); R(g, "#fff", cx + 6, y - 6, 15, 7); R(g, "#dff1ff", cx, y + 5, 28, 2);
+    });
+  }
+  function skyStatic() {
+    if (realmCache.sky) return realmCache.sky;
+    const [c, g] = newCv(), r = rng(5);
+    ["#1d1650", "#2f2070", "#4a2a8a", "#6b3a9c", "#97499f", "#c85f9a", "#ee8a8e", "#ffb98a"].forEach((col, i) => R(g, col, 0, i * 23, W, 24));
+    for (let i = 0; i < 70; i++) R(g, "rgba(255,255,255,0.7)", Math.floor(r() * W), Math.floor(r() * 90), 1, 1);
+    return (realmCache.sky = c);
+  }
+  function island(g, cx, y, w, t, i, castle) {
+    const by = y + (reduce ? 0 : Math.round(Math.sin(t * 0.9 + i * 2) * 2)), x0 = cx - Math.round(w / 2);
+    for (let r = 0; r < 12; r++) { const ww = Math.round(w * (1 - r / 13)); R(g, r % 3 === 0 ? "#5b3f78" : "#7a5a98", cx - Math.round(ww / 2), by + 4 + r, ww, 1); }
+    R(g, "#8a5a3a", x0, by + 2, w, 3); R(g, "#7fe08a", x0, by, w, 3); R(g, "#a8f0a0", x0, by, w, 1);
+    R(g, "#ff7ab6", x0 + 4, by - 6, 3, 6); R(g, "#ffc2e0", x0 + 4, by - 6, 1, 6); glow(g, x0 + 5, by - 4, 8, "255,122,182", 0.5);
+    if (castle) {
+      [[-22, 10, 30], [-8, 16, 36], [12, 10, 26]].forEach(([dx, ww, hh]) => {
+        const x = cx + dx; R(g, "#e7dcf7", x, by - hh, ww, hh); R(g, "#cbbbe8", x + ww - 3, by - hh, 3, hh);
+        for (let k = 0; k < 5; k++) R(g, "#ff7ab6", x - 1 + k, by - hh - 1 - k, ww + 2 - k * 2, 1);
+        R(g, "#ffe08a", x + Math.floor(ww / 2) - 1, by - hh + 6, 2, 4); glow(g, x + ww / 2, by - hh + 8, 7, "255,224,138", 0.5);
+      });
+      const fx = cx - 1, fy = by - 36 - 6; R(g, "#cfd6e4", fx, fy - 8, 1, 9); R(g, "#6ee7d8", fx + 1, fy - 8, 6 + (reduce ? 0 : Math.round(Math.sin(t * 5))), 3);
+    }
+  }
+  function paintSky(g, t) {
+    g.drawImage(skyStatic(), 0, 0);
+    const r = rng(9);
+    for (let i = 0; i < 24; i++) { const x = Math.floor(r() * W), y = Math.floor(r() * 80); g.globalAlpha = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(t * 2 + i)); R(g, "#fff", x, y, 2, 2); }
+    g.globalAlpha = 1;
+    glow(g, 70, 34, 40, "255,240,200", 0.35); disc(g, "#fff1c9", 70, 34, 15); disc(g, "#ecd9a8", 65, 30, 4); disc(g, "#ecd9a8", 76, 39, 3); disc(g, "#bfe8ff", 118, 18, 5);
+    for (let x = 0; x < W; x += 2) { // aurora
+      const y = 28 + Math.sin(x * 0.035 + t * 0.7) * 9 + Math.sin(x * 0.08 - t * 0.4) * 4;
+      R(g, "rgba(110,231,216,0.16)", x, Math.round(y), 2, 26); R(g, "rgba(167,139,250,0.16)", x, Math.round(y) + 8, 2, 22);
+    }
+    g.lineWidth = 2; g.globalAlpha = 0.38;
+    ["#ff6b6b", "#ffa94d", "#ffe066", "#69db7c", "#4dabf7", "#9775fa"].forEach((c, i) => { g.strokeStyle = c; g.beginPath(); g.arc(250, 172, 118 - i * 2.6, Math.PI * 1.12, Math.PI * 1.9); g.stroke(); });
+    g.globalAlpha = 1;
+    [[20, 122, 1.3, 3], [170, 134, 1.6, 4], [262, 116, 1.1, 2.5]].forEach(([x, y, s, v]) => puff(g, Math.round(((x - (reduce ? 0 : t) * v) % (W + 90) + (W + 90)) % (W + 90)) - 45, y, s, "#ffd9ec", "#e0a8d0"));
+    island(g, 250, 78, 64, t, 0, true); island(g, 58, 98, 40, t, 1); island(g, 148, 54, 26, t, 2);
+    for (let j = 0; j < 7; j++) R(g, "rgba(190,240,255,0.75)", 72, 108 + Math.round(((j * 7 + (reduce ? 0 : t) * 30) % 42)), 2, 3);
+    for (let i = 0; i < 14; i++) { const x = (i * 53 + t * 6) % W, y = 40 + ((i * 37) % 90) + Math.sin(t + i) * 3; R(g, "rgba(255,240,170,0.8)", Math.round(x), Math.round(y), 1, 1); }
+  }
+  function drawRealm(t) {
+    if (!PRESENT || realm.p <= 0 || !realm.name) return;
+    rg.clearRect(0, 0, W, H);
+    (realm.name === "mc" ? paintMc : paintSky)(rg, t);
+    const p = ease(realm.p), cx = Math.round(player.x), cy = Math.round(FOOT - 30 + flyY);
+    if (p >= 1) { ctx.drawImage(realmCv, 0, 0); return; }
+    const rmax = Math.hypot(Math.max(cx, W - cx), Math.max(cy, H - cy)) + 4, rad = p * rmax;
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.clip(); ctx.drawImage(realmCv, 0, 0); ctx.restore();
+    ctx.strokeStyle = "rgba(255,255,255," + (0.8 * (1 - p)) + ")"; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, rad, 0, Math.PI * 2); ctx.stroke();
+  }
+  function drawRealmFront(t) {
+    if (!PRESENT || realm.name !== "sky" || realm.p < 0.6) return;
+    ctx.globalAlpha = 0.55;
+    puff(ctx, Math.round(((60 - (reduce ? 0 : t) * 9) % (W + 120) + W + 120) % (W + 120)) - 60, 156, 2, "#fff0f8", "#e8c8e8");
+    puff(ctx, Math.round(((240 - (reduce ? 0 : t) * 6) % (W + 120) + W + 120) % (W + 120)) - 60, 168, 2.4, "#fff0f8", "#e8c8e8");
+    ctx.globalAlpha = 1;
+  }
   function drawPick(hx, hy, dir, f) {
     if (f === 0) { line("#6b4423", hx, hy, hx + 7 * dir, hy - 9); R(ctx, "#0a0a14", hx + 7 * dir - 3, hy - 11, 7, 4); R(ctx, "#cfd6e4", hx + 7 * dir - 2, hy - 10, 5, 2); }
     else { line("#6b4423", hx, hy, hx + 8 * dir, hy + 2); R(ctx, "#0a0a14", hx + 8 * dir - 2, hy - 3, 4, 8); R(ctx, "#cfd6e4", hx + 8 * dir - 1, hy - 2, 2, 6); }
@@ -950,8 +1061,9 @@
       every("v", e, 0.5, (i) => addPart({ x: px + (Math.random() * 40 - 20), y: FOOT - 46, vx: (Math.random() - 0.5) * 0.3, vy: -0.4, life: 50, kind: "glyph", ch: "ABC"[i % 3], col: "#6ee7d8" }));
     }
     if (n === "quest") {
-      once("h", e > 0.05, () => hop(-2));
-      ["#ffd34d", "#ffd34d", "#ffd34d"].forEach((c, i) => { const a = e * 2 + i * 2.1; R(ctx, c, Math.round(px + Math.cos(a) * 18), Math.round(FOOT - 56 + Math.sin(a) * 5), 2, 2); });
+      once("h", e > 0.05, () => hop(-2.6));
+      if (PRESENT) once("go", e > 0.35, () => { if (realm.name !== "sky" || realm.p < 1) { realmGo("sky"); jingle([523, 659, 784, 1046, 1318]); burst(px, FOOT - 30, 14, "#ffe08a"); } });
+      ["#ffd34d", "#ffd34d", "#ffd34d"].forEach((c, i) => { const a = e * 2 + i * 2.1; R(ctx, c, Math.round(px + Math.cos(a) * 18), Math.round(FOOT - 56 + flyY + Math.sin(a) * 5), 2, 2); });
     }
 
     if (n === "book1" || n === "book2") {
@@ -968,7 +1080,7 @@
     }
 
     if (n === "bye") {
-      const cy = FOOT - 26 + hy;
+      const cy = FOOT - 26 + hy + Math.round(flyY);
       glow(ctx, px, cy, 52, "255,214,140", 0.32 + 0.12 * Math.sin(e * 3));
       once("h0", e > 0.3, () => hop(-2.8));
       if (e > 2) every("hop", e, 1.3, () => hop(-2.3));
@@ -981,22 +1093,19 @@
       once("fw", true, () => { fwUntil = nowT + 3600; fwNext = nowT + 0.2; });
     }
     if (n === "mc" && PRESENT) {
-      const end = pm.done ? 0.3 : MC_END;
-      if (!pm.done && e < end) {
-        const f = Math.floor(e / 0.22) % 2, hx = px - 8, hyy = FOOT - 20 + hy;
+      once("jump", e > 0.15, () => hop(-2.8));
+      once("go", e > 0.5, () => { if (realm.name !== "mc" || realm.p < 1) { realmGo("mc"); jingle([392, 523, 659, 784, 1046]); burst(px, FOOT - 30, 14, "#9be07a"); } pm.done = true; });
+      if (realm.name === "mc" && realm.p >= 1) {
+        const em = e - 1.6, f = Math.floor(e / 0.22) % 2, hx = px - 8, hyy = FOOT - 20 + hy;
         drawPick(hx, hyy, -1, f);
+        const bxx = px - 24, byy = FOOT - 8, st = Math.max(0, Math.floor((em % 1.8) / 0.45));
+        if (em > 0) {
+          drawMcStone(bxx, byy); R(ctx, "#6ee7d8", bxx + 1, byy + 1, 2, 2); R(ctx, "#6ee7d8", bxx + 3, byy + 3, 2, 2);
+          for (let k = 0; k < st; k++) R(ctx, "#0a0a14", bxx + 1 + k, byy + 1 + k, 1, 3);
+          every("brk", em, 1.8, () => { for (let i = 0; i < 8; i++) addPart({ x: bxx + 3, y: byy + 3, vx: (Math.random() - 0.7) * 1.2, vy: -0.8 - Math.random() * 0.8, g: 0.05, life: 30, kind: "bit", col: i % 2 ? "#8d93a3" : "#6ee7d8" }); jingle([784, 988, 1318]); });
+        }
         every("sw", e, 0.22, (i) => { if (i % 2 === 1) { burst(hx - 8, hyy + 2, 3, "#ffe08a", "spark"); blip(220, 0.04, 0.025); } });
       }
-      MC_LAYOUT.forEach((b, i) => {
-        if (pm.built[i]) return;
-        const p = (e - (0.8 + i * 0.4)) / 0.6;
-        if (p < 0) return;
-        const [lx, ly] = mcPos(b);
-        if (p < 1) drawMcBlock(b, Math.round(lerp(px - 8, lx, p)), Math.round(lerp(FOOT - 30, ly, p) - Math.sin(p * Math.PI) * 18));
-        else { pm.built[i] = true; burst(lx + 3, ly + 4, 3, b[1] ? "#cfd6e4" : "#9be07a", "spark"); blip(330 + i * 30, 0.05, 0.025); }
-      });
-      once("fin", e >= end, mcFinish);
-      if (e > end && e < end + 6) every("cel", e, 0.9, () => hop(-2));
     }
     if (n === "mc" && !PRESENT) {
       const f = Math.floor(e / 0.22) % 2, hx = px + 8, hyy = FOOT - 20 + hy;
@@ -1110,7 +1219,8 @@
     }
   }
   function drawNPCs(t) {
-        ctx.drawImage(CAPTAIN, 120, 106 + (wob(t, 1.6, 0.6) > 0 ? 1 : 0));
+        R(ctx, "#0a0a14", 192, 116, 17, 14); R(ctx, "#8a5a30", 193, 117, 15, 12); R(ctx, "#a8702f", 193, 117, 15, 2); R(ctx, "#6b4423", 193, 122, 15, 1);
+        ctx.drawImage(OWL, 197, 105 + (wob(t, 1.6, 0.6) > 0 ? 1 : 0));
   }
   function drawShoot(t) {
     if (!shoot) return;
@@ -1278,7 +1388,7 @@
 
   /* interactables added to the pier (marker rules: show / done) */
   HOTSPOTS.push(
-    { id: "captain", mx: 128, my: 94, spot: 136, bx: [118, 104, 136, 128], run: () => openNPC("captain"), done: () => game.done.has("captain") }
+    { id: "captain", mx: 203, my: 94, spot: 213, bx: [192, 104, 210, 130], run: () => openNPC("owl"), done: () => game.done.has("captain") }
   );
 
   /* ---- guide bar + on-scene arrows ---- */
@@ -1360,6 +1470,7 @@
     last = ts; tick++;
     const t = ts / 1000; nowT = t;
     if (dawnOn) dawn = Math.min(1, (t - dawnT0) / 9);
+    realmStep();
 
     // input e movimento
     const kl = keys.left && !keys.right, kr = keys.right && !keys.left;
@@ -1424,7 +1535,7 @@
     glow(ctx, 269, 112, 14, "255,200,100", 0.5);
     if (mailbox.flag) { R(ctx, "#0a0a14", 229, 98, 3, 10); R(ctx, "#ffd36b", 230, 99, 1, 8); R(ctx, "#0a0a14", 227, 98, 6, 5); R(ctx, "#ffc857", 228, 99, 4, 3); }
     drawDoorOpen(t);
-    drawWorld(t); if (!PRESENT) drawFinishSign(t); drawDawn();
+    drawWorld(t); if (!PRESENT) drawFinishSign(t); drawDawn(); drawRealm(t);
 
     // stelle
     STARS.forEach((s) => {
@@ -1438,7 +1549,6 @@
     HOTSPOTS.forEach((h) => { if (PRESENT || h.hide || (h.show && !h.show())) return; drawMarker(h.mx, h.my, game.places.has(h.id) || !!(h.done && h.done()), t, h.n); });
 
     fxBack(t);
-    if (PRESENT) drawBoatBlocks(t);
 
     // personaggio
     const typing = act && act.state === "do" && (act.name === "web" || act.name === "git");
@@ -1446,12 +1556,13 @@
     const walkStep = player.moving ? (Math.floor(tick / 5) % 2) + 1 : 0;
     const bob = player.moving ? (Math.floor(tick / 5) % 2) : typing ? (Math.floor(tick / 3) % 2) : mining ? (Math.floor((t - act.t0) / 0.22) % 2) : reduce ? 0 : (Math.floor(t * 1.6) % 2);
     drawSprite(bob, walkStep, (t % 4.2) > 4.05);
-    const px = Math.round(player.x), py = Math.round(FOOT + player.hy);
-    ctx.fillStyle = "rgba(0,0,10,0.32)"; ctx.fillRect(px - 9, FOOT - 2, 18, 2); ctx.fillRect(px - 6, FOOT - 3, 12, 1);
+    const px = Math.round(player.x), py = Math.round(FOOT + player.hy + flyY);
+    if (flyY > -3) { ctx.fillStyle = "rgba(0,0,10,0.32)"; ctx.fillRect(px - 9, FOOT - 2, 18, 2); ctx.fillRect(px - 6, FOOT - 3, 12, 1); }
+    else if (tick % 3 === 0) addPart({ x: px + Math.random() * 10 - 5, y: py - 4, vy: 0.25, life: 30, kind: "star", col: Math.random() > 0.5 ? "#ffe08a" : "#ffc2e0" });
     ctx.save(); ctx.translate(px, py - 44);
     if (player.dir < 0) ctx.scale(-1, 1);
     ctx.drawImage(sp, -15, 0); ctx.restore();
-    glow(ctx, px, FOOT - 20, 22, "255,200,110", 0.18 * lf);
+    glow(ctx, px, FOOT - 20 + flyY, 22, "255,200,110", 0.18 * lf);
 
     if (!blocked()) {
       const ob = reduce ? 0 : Math.round(Math.sin(t * 5) * 2);
@@ -1459,6 +1570,7 @@
       if (gh && !(act && act.state === "do" && PLACE_OF_ACT[act.name] === gTarget)) pixArrow(gh.mx, gh.my - 14 + ob, 0);
       if (gDir && !(act && act.name in SPOTS)) pixArrow(px + gDir * (22 + ob), FOOT - 24, gDir);
     }
+    drawRealmFront(t);
     fxFront(t);
     drawRockets(t);
     drawParts();
@@ -1512,7 +1624,7 @@
     jingle([523, 659, 784, 1046, 1318, 1568]);
     setTimeout(() => {
       if (!pmEnding) return;
-      const vw = window.innerWidth, vh = window.innerHeight, kz = 1.6, [sx, sy] = sceneToScreen(player.x, FOOT - 26);
+      const vw = window.innerWidth, vh = window.innerHeight, kz = 1.6, [sx, sy] = sceneToScreen(player.x, FOOT - 26 + flyY);
       const dx = Math.max((vw - sx) * (1 - kz), Math.min(sx * (kz - 1), vw * 0.5 - sx)), dy = Math.max((vh - sy) * (1 - kz), Math.min(sy * (kz - 1), vh * 0.62 - sy));
       scn.style.transformOrigin = `${sx}px ${sy}px`; scn.style.transform = `translate(${dx}px, ${dy}px) scale(${kz})`;
     }, 1100);
@@ -1600,9 +1712,8 @@
   const PANEL_ACT = { profile: "profile", skills: "stats", about: "about", inventory: "inventory", facts: "facts", quiz: "quiz", vocab: "vocab", quest: "quest" };
   /* presentation mode: one slide per menu item; Filippo walks and acts out what is written */
   const SLIDES = [
+    { act: "about", chap: 0, say: CONTENT.chapters[0].text[0] },  // The Beginning
     { act: "profile" },                                           // Profile
-    { act: "stats" },                                             // Skills
-    { act: "about", chap: 0, say: CONTENT.chapters[0].text[0] },  // The Beginning: at home
     { act: "inventory", chap: 1, say: CONTENT.chapters[1].text[0] }, // Creating Things: code, books, Minecraft
     { act: "web", say: "I build websites and try new technologies. This site is one of them." },
     { act: "book1", say: "“3:17” is a book about the mind and memory. It's out on Amazon!" },
@@ -1615,6 +1726,7 @@
     if (sl.say) SAYS[sl.act] = sl.say;
     const mi = SLIDES.findIndex((x) => x.act === "mc");
     if (current < mi) mcReset(); else if (current > mi && !pm.done) mcInstant();
+    if (sl.act !== "mc" && sl.act !== "quest") realmGo(null); else if (realm.name && !(sl.act === realm.name || (sl.act === "quest" && realm.name === "sky"))) realmGo(null);
     perform(sl.act, { hold: true, restart: true });
   }
   let current = 0;

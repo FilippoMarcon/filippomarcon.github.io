@@ -1994,3 +1994,15 @@
     setTimeout(presentSlide, 600);
   } else { intro.hidden = false; $("introStart").focus(); runIntro(); }
 })();
+/* clock: today's date and time (shown in presentation mode, top left) */
+(function () {
+  const el = document.getElementById("pmClock"); if (!el) return;
+  function tick() {
+    const d = new Date();
+    const date = d.toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+    const time = String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+    const txt = date + " · " + time;
+    if (el.textContent !== txt) el.textContent = txt;
+  }
+  tick(); setInterval(tick, 1000);
+})();

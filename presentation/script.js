@@ -1022,7 +1022,7 @@
     const e = t - act.t0, px = Math.round(player.x), n = act.name, hy = Math.round(player.hy);
 
     if (n === "web") {
-      const w = 48, h = 34, x = popX(px, w), y = POP_Y, k = ease(e / 0.3);
+      const w = 48, h = 34, x = popX(px, w) + (PRESENT ? 72 : 0), y = POP_Y, k = ease(e / 0.3);
       popup(x, y, w, h, k);
       if (k >= 1) {
         R(ctx, "#3d4d99", x, y, w, 5); R(ctx, "#e5484d", x + 2, y + 2, 1, 1); R(ctx, "#ffc857", x + 4, y + 2, 1, 1); R(ctx, "#4ade80", x + 6, y + 2, 1, 1);

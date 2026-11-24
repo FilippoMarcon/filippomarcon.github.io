@@ -1680,6 +1680,12 @@
     else if (k === "Home") { e.preventDefault(); show(0, true); }
     else if (k === "End") { e.preventDefault(); show(buttons.length - 1, true); }
   }
+  const pmNextBtn = $("pmNext");
+  if (pmNextBtn) pmNextBtn.addEventListener("click", () => {
+    if (!PRESENT || blocked() || pmEnding) return;
+    if (current === buttons.length - 1) startEnd(); else goSlide(1);
+    pmNextBtn.blur();
+  });
   window.addEventListener("keydown", (e) => {
     const k = e.key;
     if (k === "Escape") { if (modalOpen) closeModal(); else if (endOpen) closeEnd(); else if (introOpen) endIntro(); else if (PRESENT && pmEnding) stopEnd(); return; }
